@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dependency graph</title>
+  <meta name="generator" content="plasTeX" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles/theme-white.css" />
+  <link rel="stylesheet" href="styles/dep_graph.css" />
+  
+  <script type="text/x-mathjax-config">
+  
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">  </script>
+
+
+<link rel="stylesheet" href="styles/extra_styles.css" />
+
+</head>
+
+<body>
+<header>
+  <a class="toc" href="index.html">Home</a>
+  <h1 id="doc_title">Dependencies</h1>
+</header>
+<div class="wrapper">
+<div class="content">
+  <div id="Legend">
+    <span id="legend_title" class="title">Legend
+    <div class="btn">
+       <div class="bar"></div>
+       <div class="bar"></div>
+       <div class="bar"></div>
+    </div></span> 
+    <dl class="legend">
+      
+      <dt>Boxes</dt><dd>definitions</dd>
+      
+      <dt>Ellipses</dt><dd>theorems and lemmas</dd>
+      
+      <dt>Blue border</dt><dd>the <em>statement</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Orange border</dt><dd>the <em>statement</em> of this result is not ready to be formalized; the blueprint needs more work</dd>
+      
+      <dt>Blue background</dt><dd>the <em>proof</em> of this result is ready to be formalized; all prerequisites are done</dd>
+      
+      <dt>Green border</dt><dd>the <em>statement</em> of this result is formalized</dd>
+      
+      <dt>Green background</dt><dd>the <em>proof</em> of this result is formalized</dd>
+      
+      <dt>Dark green background</dt><dd>the <em>proof</em> of this result and all its ancestors are formalized</dd>
+      
+      <dt>Dark green border</dt><dd>this is in Mathlib</dd>
+      
+    </dl>
+  </div>
+    <div id="graph"></div>
+<div id="statements">
+
+    
+    <div class="dep-modal-container" id="def:accessible-fin-dfa_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:accessible-fin-dfa" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">3</span><span class="definition_thmtitle">Accessible States and Accessible DFA</span></div>
+    <div class="thm_thmcontent"><p>  A state \(s\) in a <span class="ttfamily">FinDFA</span> is called accessible if there exists some word \(w\) that reaches \(s\) from the start state. Formally, <span class="ttfamily">FinDFA.IsAccessibleState M s</span> holds when there exists a word \(w\) such that evaluating \(w\) from the start state of \(M\) results in state \(s\). </p>
+<p>An <span class="ttfamily">AccessibleFinDFA</span> is a structure that extends <span class="ttfamily">FinDFA</span> with the additional requirement that every state in the automaton is accessible from the start state. This ensures that the automaton contains no "dead" or unreachable states.   </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#def:accessible-fin-dfa">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:dfa_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dfa" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">1</span><span class="definition_thmtitle">Deterministic Finite Automaton (DFA)</span></div>
+    <div class="thm_thmcontent"><p>  Mathlib provides a general definition of deterministic finite automata that does not require the state space or alphabet to be finite or have decidable equality. A <span class="ttfamily">DFA</span> \(\alpha \) \(\sigma \) consists of: </p>
+<ul class="itemize">
+  <li><p><span class="ttfamily">step : \(\sigma \) \(\to \) \(\alpha \) \(\to \) \(\sigma \)</span> - a transition function that maps a state and input symbol to a new state </p>
+</li>
+  <li><p><span class="ttfamily">start : \(\sigma \)</span> - an initial state </p>
+</li>
+  <li><p><span class="ttfamily">accept : Set \(\sigma \)</span> - a set of accepting states </p>
+</li>
+</ul>
+<p>The <span class="ttfamily">DFA</span> structure provides methods such as: </p>
+<ul class="itemize">
+  <li><p><span class="ttfamily">eval : List \(\alpha \) \(\to \) \(\sigma \)</span> - evaluates a word from the start state </p>
+</li>
+  <li><p><span class="ttfamily">evalFrom : \(\sigma \) \(\to \) List \(\alpha \) \(\to \) \(\sigma \)</span> - evaluates a word from a given state </p>
+</li>
+  <li><p><span class="ttfamily">accepts : Set (List \(\alpha \))</span> - the language accepted by the automaton </p>
+</li>
+</ul>
+<p>Decidable equality means that for any two elements of a type, we can computationally determine whether they are equal or not. This is essential for implementing algorithms that need to compare states or symbols. </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#def:dfa">LaTeX</a>
+    
+    
+  
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:fin-dfa_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:fin-dfa" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">2</span><span class="definition_thmtitle">Computable Finite DFA</span></div>
+    <div class="thm_thmcontent"><p>  We define <span class="ttfamily">FinDFA</span> \(\alpha \) \(\sigma \) as a computable version of <span class="ttfamily">DFA</span> \(\alpha \) \(\sigma \) that enables algorithmic manipulation. A <span class="ttfamily">FinDFA</span> differs from a <span class="ttfamily">DFA</span> in several key ways: </p>
+<ul class="itemize">
+  <li><p>It requires <span class="ttfamily">Fintype</span> instances on both the alphabet \(\alpha \) and state space \(\sigma \). A <span class="ttfamily">Fintype</span> is a type that has finitely many elements and provides a way to enumerate all of them. </p>
+</li>
+  <li><p>It requires <span class="ttfamily">DecidableEq</span> instances on both types, enabling computational equality testing. </p>
+</li>
+  <li><p>The accepting states are represented as a <span class="ttfamily">Finset</span> \(\sigma \) rather than a <span class="ttfamily">Set</span> \(\sigma \). A <span class="ttfamily">Finset</span> is a finite set that can be computationally manipulated, unlike the more general <span class="ttfamily">Set</span> which may be infinite or non-computable. </p>
+</li>
+</ul>
+<p>This structure allows for a decidable procedure to determine if a state is accepting - we can simply check membership in the finite set of accepting states. We provide a coercion from <span class="ttfamily">FinDFA</span> to <span class="ttfamily">DFA</span>, allowing us to use all the existing <span class="ttfamily">DFA</span> definitions for evaluation and language acceptance.  </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#def:fin-dfa">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/FinDFA">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:exists-short-access-word_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:exists-short-access-word" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">4</span><span class="lemma_thmtitle">Short Access Words and Decidable Accessibility</span></div>
+    <div class="thm_thmcontent"><p>  A fundamental result for implementing accessibility checking is that if a state is accessible by any word, then it is accessible by some word of length at most the number of states in the automaton. This bound follows from the pigeonhole principle: if a longer word exists, it must revisit some state, creating a loop that can be removed. </p>
+<p>This theorem enables us to create a decidable procedure for determining state accessibility. Instead of searching the infinite space of all possible words, we only need to check words up to a finite length bound. Using the <span class="ttfamily">getWordsLeqLength</span> function, we can enumerate all words of bounded length and test each one. </p>
+<p>Furthermore, this allows us to implement a language-preserving conversion from any <span class="ttfamily">FinDFA</span> to an <span class="ttfamily">AccessibleFinDFA</span> by restricting the state space to only the accessible states. The resulting automaton accepts exactly the same language as the original.   </p>
+</div>
+
+    <a class="latex_link" href="sect0001.html#lem:exists-short-access-word">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/FinDFA.exists_short_access_word" class="lean_decl">FinDFA.exists_short_access_word</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/FinDFA.toAccessible" class="lean_decl">FinDFA.toAccessible</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/FinDFA.toAccessible_pres_lang" class="lean_decl">FinDFA.toAccessible_pres_lang</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+</div>
+</div> <!-- content -->
+</div> <!-- wrapper -->
+<script src="js/jquery.min.js" type="text/javascript"></script>
+
+<script src="js/d3.min.js"></script>
+<script src="js/hpcc.min.js"></script>
+<script src="js/d3-graphviz.js"></script>
+
+<script type="text/javascript">
+const graphContainer = d3.select("#graph");
+const width = graphContainer.node().clientWidth;
+const height = graphContainer.node().clientHeight;
+
+
+graphContainer.graphviz({useWorker: true})
+    .width(width)
+    .height(height)
+    .fit(true)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:dfa"	[color=green,		fillcolor="#B0ECA3",		label=dfa,		shape=box,		style=filled];	"def:fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="fin-dfa",		shape=box,		style=filled];	"def:accessible-fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="accessible-fin-dfa",		shape=box,		style=filled];	"def:fin-dfa" -> "def:accessible-fin-dfa"	[style=dashed];	"lem:exists-short-access-word"	[color=green,		fillcolor="#1CAC78",		label="exists-short-access-word",		shape=ellipse,		style=filled];	"def:accessible-fin-dfa" -> "lem:exists-short-access-word"	[style=dashed];}`)
+    .on("end", interactive);
+
+latexLabelEscaper = function(label) {
+  return label.replace(/\./g, '\\.').replace(/:/g, '\\:')
+}
+
+clickNode = function() {
+  $("#statements div").hide()
+  var node_id = $('text', this).text();
+  $('.thm').hide();
+  $('#'+latexLabelEscaper(node_id)).show().children().show();
+}
+function interactive() {
+    $("span#legend_title").on("click", function () {
+           $(this).siblings('dl').toggle();
+        })
+
+    d3.selectAll('.node')
+        .attr('pointer-events', 'fill')
+        .on('click', function () {
+           var title = d3.select(this).selectAll('title').text().trim();
+           $('#statements > div').hide()
+           $('.thm').hide();
+           $('#'+latexLabelEscaper(title)+'_modal').show().children().show().children().show();
+           $('#statements').show()
+        });
+
+    d3.selectAll('.dep-closebtn').on('click', function() {
+        var modal =
+            d3.select(this).node().parentNode.parentNode.parentNode ;
+        d3.select(modal).style('display', 'none');
+    });
+}
+
+</script>
+
+</body>
+</html>
