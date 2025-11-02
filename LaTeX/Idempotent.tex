@@ -1,0 +1,31 @@
+\chapter{Idempotent Elements in Finite Semigroups}
+
+% Begin MyProject/Semigroup/Idempotent.lean
+
+\begin{lemma}[Existence of Idempotent Powers]
+\label{lem:exists-unique-idempotent-pow}
+In a finite semigroup, for any element $x$, there exists a positive integer $m$ such that $x^m$ is an idempotent. This idempotent power is unique. The existence is a consequence of the fact that in a finite semigroup, the sequence of powers of an element $x, x^2, x^3, \dots$ must eventually repeat. From a repeating sequence, an idempotent can be constructed.
+\lean{Semigroup.exists_repeating_pow, Semigroup.pow_idempotent_unique, Semigroup.exists_idempotent_pow}
+\leanok
+\end{lemma}
+
+\begin{proof}
+\leanok
+Since the semigroup $S$ is finite, for any $x \in S$, the set of its powers $\{x^1, x^2, x^3, \dots\}$ must also be finite. By the pigeonhole principle, there must exist distinct positive integers $m, n$ such that $x^m = x^n$. Let's assume $m < n$. Then we can write $x^m = x^m x^{n-m}$. This shows that powers of $x$ eventually enter a cycle. From this cyclic part, we can extract a power $k$ such that $x^k$ is idempotent. The proof of uniqueness follows by showing that if $x^a$ and $x^b$ are both idempotents, then $x^a = x^b$.
+\end{proof}
+
+\begin{lemma}[Sandwich Property in Finite Monoids]
+\label{lem:exists-pow-sandwich}
+In a finite monoid $M$, if an element $a$ satisfies the property $a = xay$ for some $x, y \in M$, then there exist non-zero powers of $x$ and $y$, say $n_1$ and $n_2$, such that $x^{n_1}a = a$ and $ay^{n_2} = a$.
+\lean{Monoid.exists_pow_sandwich_eq_self}
+\leanok
+\uses{lem:exists-unique-idempotent-pow}
+\end{lemma}
+
+\begin{proof}
+\leanok
+From $a = xay$, we can repeatedly substitute $a$ into itself to get $a = x^k a y^k$ for any $k \geq 1$. Since $M$ is a finite monoid, there exists a non-zero power $n_1$ such that $x^{n_1}$ is an idempotent (by \ref{lem:exists-unique-idempotent-pow}). Then we have $a = x^{n_1} a y^{n_1}$. Multiplying by $x^{n_1}$ on the left gives $x^{n_1}a = x^{2n_1} a y^{n_1}$. Since $x^{n_1}$ is idempotent, $x^{2n_1} = x^{n_1}$, so $x^{n_1}a = x^{n_1} a y^{n_1} = a$. A symmetric argument shows that $ay^{n_2} = a$ for some idempotent power $y^{n_2}$.
+\uses{lem:exists-unique-idempotent-pow}
+\end{proof}
+
+% End MyProject/Semigroup/Idempotent.lean

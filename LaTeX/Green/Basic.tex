@@ -1,0 +1,35 @@
+\chapter{Basic Properties of Green's Relations}
+
+% Begin MyProject/Semigroup/Green/Basic.lean
+
+\begin{lemma}[Characterization of Elements Below Idempotents]
+\label{lem:le-idempotent}
+Let $e$ be an idempotent element in a semigroup $S$. An element $x \in S$ is $\mathcal{R}$-below $e$ if and only if $x = ex$. Similarly, $x$ is $\mathcal{L}$-below $e$ if and only if $x = xe$. It follows that $x$ is $\mathcal{H}$-below $e$ if and only if both conditions hold, i.e., $x = ex$ and $x = xe$.
+\lean{Semigroup.RPreorder.le_idempotent, Semigroup.LPreorder.le_idempotent, Semigroup.HPreorder.le_idempotent}
+\leanok
+\uses{def:greens-relations}
+\end{lemma}
+
+\begin{proof}
+\leanok
+For the $\mathcal{R}$-preorder, if $x \leq_{\mathcal{R}} e$, then $x = ez$ for some $z \in S^1$. Since $e$ is idempotent, $e=e^2$, so $ex = e(ez) = e^2z = ez = x$. Conversely, if $x=ex$, then $x \leq_{\mathcal{R}} e$ by definition. The argument for the $\mathcal{L}$-preorder is analogous. The statement for $\mathcal{H}$ follows directly from the definitions.
+\uses{def:greens-relations}
+\end{proof}
+
+\begin{lemma}[Preservation of Green's Relations by Morphisms]
+\label{lem:greens-relations-hom-pres}
+Green's relations are preserved under semigroup morphisms. Let $f: S \to T$ be a semigroup morphism. If two elements $x, y \in S$ are related by any of Green's preorders or equivalence relations, then their images $f(x), f(y)$ are related by the same relation in $T$.
+\lean{Semigroup.RPreorder.hom_pres, Semigroup.LPreorder.hom_pres, Semigroup.JPreorder.hom_pres, Semigroup.HPreorder.hom_pres, Semigroup.REquiv.hom_pres, Semigroup.LEquiv.hom_pres, Semigroup.JEquiv.hom_pres, Semigroup.HEquiv.hom_pres, Semigroup.DEquiv.hom_pres}
+\leanok
+\uses{def:greens-relations}
+\end{lemma}
+
+\begin{proof}
+\leanok
+If $x \leq_{\mathcal{R}} y$, then $x = yz$ for some $z \in S^1$. Applying the morphism $f$ gives $f(x) = f(yz) = f(y)f(z)$, so $f(x) \leq_{\mathcal{R}} f(y)$. This extends to the equivalence relation: if $x \mathcal{R} y$, then $x \leq_{\mathcal{R}} y$ and $y \leq_{\mathcal{R}} x$, which implies $f(x) \leq_{\mathcal{R}} f(y)$ and $f(y) \leq_{\mathcal{R}} f(x)$, so $f(x) \mathcal{R} f(y)$.
+
+A similar argument holds for $\mathcal{L}$. The preservation of $\mathcal{J}$ and $\mathcal{H}$ follows from their definitions. For $\mathcal{D}$, if $x \mathcal{D} y$, there exists $z$ such that $x \mathcal{R} z$ and $z \mathcal{L} y$. Then $f(x) \mathcal{R} f(z)$ and $f(z) \mathcal{L} f(y)$, which implies $f(x) \mathcal{D} f(y)$.
+\uses{def:greens-relations}
+\end{proof}
+
+% End MyProject/Semigroup/Green/Basic.lean

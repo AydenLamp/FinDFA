@@ -1,0 +1,18 @@
+{
+  "name": "Lean4 + LeanBlueprint",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "root",
+  "onCreateCommand": "lake exe cache get!",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+      "leanprover.lean4"
+      ]
+    }
+  },
+  "hostRequirements": {
+    "cpus": 4
+  }
+}

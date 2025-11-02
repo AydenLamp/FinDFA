@@ -1,0 +1,72 @@
+\chapter{Finite Deterministic Automata}
+
+% Begin MyProject/FinDFANew/Defs.lean
+
+\begin{definition}[Deterministic Finite Automaton (DFA)]
+\label{def:dfa}
+Mathlib provides a general definition of deterministic finite automata that does not require the state space or alphabet to be finite or have decidable equality. A \texttt{DFA} $\alpha$ $\sigma$ consists of:
+\begin{itemize}
+    \item \texttt{step : $\sigma$ $\to$ $\alpha$ $\to$ $\sigma$} - a transition function that maps a state and input symbol to a new state
+    \item \texttt{start : $\sigma$} - an initial state
+    \item \texttt{accept : Set $\sigma$} - a set of accepting states
+\end{itemize}
+
+The \texttt{DFA} structure provides methods such as:
+\begin{itemize}
+    \item \texttt{eval : List $\alpha$ $\to$ $\sigma$} - evaluates a word from the start state
+    \item \texttt{evalFrom : $\sigma$ $\to$ List $\alpha$ $\to$ $\sigma$} - evaluates a word from a given state
+    \item \texttt{accepts : Set (List $\alpha$)} - the language accepted by the automaton
+\end{itemize}
+
+Decidable equality means that for any two elements of a type, we can computationally determine whether they are equal or not. This is essential for implementing algorithms that need to compare states or symbols.
+\leanok
+\end{definition}
+
+\begin{definition}[Computable Finite DFA]
+\label{def:fin-dfa}
+We define \texttt{FinDFA} $\alpha$ $\sigma$ as a computable version of \texttt{DFA} $\alpha$ $\sigma$ that enables algorithmic manipulation. A \texttt{FinDFA} differs from a \texttt{DFA} in several key ways:
+
+\begin{itemize}
+    \item It requires \texttt{Fintype} instances on both the alphabet $\alpha$ and state space $\sigma$. A \texttt{Fintype} is a type that has finitely many elements and provides a way to enumerate all of them.
+    \item It requires \texttt{DecidableEq} instances on both types, enabling computational equality testing.
+    \item The accepting states are represented as a \texttt{Finset} $\sigma$ rather than a \texttt{Set} $\sigma$. A \texttt{Finset} is a finite set that can be computationally manipulated, unlike the more general \texttt{Set} which may be infinite or non-computable.
+\end{itemize}
+
+This structure allows for a decidable procedure to determine if a state is accepting - we can simply check membership in the finite set of accepting states. We provide a coercion from \texttt{FinDFA} to \texttt{DFA}, allowing us to use all the existing \texttt{DFA} definitions for evaluation and language acceptance.
+\lean{FinDFA}
+\leanok
+\end{definition}
+
+\begin{definition}[Accessible States and Accessible DFA]
+\label{def:accessible-fin-dfa}
+A state $s$ in a \texttt{FinDFA} is called accessible if there exists some word $w$ that reaches $s$ from the start state. Formally, \texttt{FinDFA.IsAccessibleState M s} holds when there exists a word $w$ such that evaluating $w$ from the start state of $M$ results in state $s$.
+
+An \texttt{AccessibleFinDFA} is a structure that extends \texttt{FinDFA} with the additional requirement that every state in the automaton is accessible from the start state. This ensures that the automaton contains no "dead" or unreachable states.
+\lean{AccessibleFinDFA}
+\leanok
+\uses{def:fin-dfa}
+\end{definition}
+
+\begin{lemma}[Short Access Words and Decidable Accessibility]
+\label{lem:exists-short-access-word}
+A fundamental result for implementing accessibility checking is that if a state is accessible by any word, then it is accessible by some word of length at most the number of states in the automaton. This bound follows from the pigeonhole principle: if a longer word exists, it must revisit some state, creating a loop that can be removed.
+
+This theorem enables us to create a decidable procedure for determining state accessibility. Instead of searching the infinite space of all possible words, we only need to check words up to a finite length bound. Using the \texttt{getWordsLeqLength} function, we can enumerate all words of bounded length and test each one.
+
+Furthermore, this allows us to implement a language-preserving conversion from any \texttt{FinDFA} to an \texttt{AccessibleFinDFA} by restricting the state space to only the accessible states. The resulting automaton accepts exactly the same language as the original.
+\lean{FinDFA.exists_short_access_word, FinDFA.toAccessible, FinDFA.toAccessible_pres_lang}
+\leanok
+\uses{def:accessible-fin-dfa}
+\end{lemma}
+
+\begin{proof}
+\leanok
+The proof uses strong induction on the length of the access word. If the word length is already within the bound (at most the number of states), we are done. Otherwise, the word must be longer than the number of states, so by the pigeonhole principle, some state must be visited twice during the evaluation.
+
+Using Mathlib's \texttt{DFA.evalFrom\_split} lemma, we can decompose the long word into three parts: a prefix leading to the first occurrence of the repeated state, a middle section that forms a loop returning to the same state, and a suffix continuing from there to the final state. By removing the loop (middle section), we obtain a shorter word that still reaches the same final state.
+
+We can then apply the induction hypothesis to this shorter word, eventually obtaining a word within the desired length bound. The decidability instance follows by checking membership in the finite set of states reachable by bounded-length words.
+\uses{def:accessible-fin-dfa}
+\end{proof}
+
+% End MyProject/FinDFANew/Defs.lean
