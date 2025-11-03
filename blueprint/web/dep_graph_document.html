@@ -94,6 +94,66 @@
 
 
     
+    <div class="dep-modal-container" id="def:accessible-fin-dfa-le_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:accessible-fin-dfa-le" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">7</span><span class="definition_thmtitle">Partial Order on AccessibleFinDFAs</span></div>
+    <div class="thm_thmcontent">
+<p>We define a partial order on <span class="ttfamily">AccessibleFinDFA</span>s by the existence of surjective morphisms between their underlying DFAs. </p>
+<p>A <em>surjective morphism</em> \(M \twoheadrightarrow N\) between accessible finite DFAs is a morphism on their underlying DFAs that is surjective on states. </p>
+<p>We define \(M \leq N\) if and only if there exists a surjective morphism \(N \twoheadrightarrow M\). </p>
+<p>This relation satisfies: </p>
+<ul class="itemize">
+  <li><p><b class="bfseries">Reflexivity</b>: \(M \leq M\) for all \(M\) </p>
+</li>
+  <li><p><b class="bfseries">Transitivity</b>: If \(M \leq N\) and \(N \leq O\), then \(M \leq O\) </p>
+</li>
+  <li><p><b class="bfseries">Antisymmetry up to equivalence</b>: If \(M \leq N\) and \(N \leq M\), then \(M.\text{toDFA} \simeq _\ell N.\text{toDFA}\) </p>
+</li>
+</ul>
+<p>An <span class="ttfamily">AccessibleFinDFA</span> \(M\) is <em>minimal</em> if for every \(N\) with \(N \leq M\), we have \(M.\text{toDFA} \simeq _\ell N.\text{toDFA}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#def:accessible-fin-dfa-le">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.HomSurj" class="lean_decl">AccessibleFinDFA.HomSurj</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le" class="lean_decl">AccessibleFinDFA.le</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_refl" class="lean_decl">AccessibleFinDFA.le_refl</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_trans" class="lean_decl">AccessibleFinDFA.le_trans</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_antisymm" class="lean_decl">AccessibleFinDFA.le_antisymm</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.IsMinimal" class="lean_decl">AccessibleFinDFA.IsMinimal</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="def:dfa_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -142,6 +202,55 @@
 
 
     
+    <div class="dep-modal-container" id="def:dfa-hom_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:dfa-hom" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">5</span><span class="definition_thmtitle">DFA Morphism</span></div>
+    <div class="thm_thmcontent">
+<p>A <em>morphism</em> between DFAs \(M : \text{DFA}(\alpha , \sigma _1)\) and \(N : \text{DFA}(\alpha , \sigma _2)\), denoted \(M \to _\ell N\), is a function \(f : \sigma _1 \to \sigma _2\) that preserves: </p>
+<ul class="itemize">
+  <li><p>The start state: \(f(M.\text{start}) = N.\text{start}\) </p>
+</li>
+  <li><p>The accepting states: \(q \in M.\text{accept} \iff f(q) \in N.\text{accept}\) </p>
+</li>
+  <li><p>State transitions: \(f(M.\text{evalFrom}(q, w)) = N.\text{evalFrom}(f(q), w)\) for all states \(q\) and words \(w\) </p>
+</li>
+</ul>
+<p>An <em>equivalence</em> of DFAs, denoted \(M \simeq _\ell N\), is a bijective morphism with an inverse morphism. </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#def:dfa-hom">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Hom" class="lean_decl">DFA.Hom</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Equiv" class="lean_decl">DFA.Equiv</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
     <div class="dep-modal-container" id="def:fin-dfa_modal">
       <div class="dep-modal-content">
           <button class="dep-closebtn">
@@ -154,7 +263,7 @@
       Definition
       </span>
       <span class="definition_thmlabel">2</span><span class="definition_thmtitle">Computable Finite DFA</span></div>
-    <div class="thm_thmcontent"><p>  We define <span class="ttfamily">FinDFA</span> \(\alpha \) \(\sigma \) as a computable version of <span class="ttfamily">DFA</span> \(\alpha \) \(\sigma \) that enables algorithmic manipulation. A <span class="ttfamily">FinDFA</span> differs from a <span class="ttfamily">DFA</span> in several key ways: </p>
+    <div class="thm_thmcontent">
 <ul class="itemize">
   <li><p>It requires <span class="ttfamily">Fintype</span> instances on both the alphabet \(\alpha \) and state space \(\sigma \). A <span class="ttfamily">Fintype</span> is a type that has finitely many elements and provides a way to enumerate all of them. </p>
 </li>
@@ -170,6 +279,123 @@
     
     
   <a class="lean_link lean_decl" href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/FinDFA">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="def:nerode-equiv_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="def:nerode-equiv" style="display: none">
+    <div class="thm_thmheading">
+      <span class="definition_thmcaption">
+      Definition
+      </span>
+      <span class="definition_thmlabel">8</span><span class="definition_thmtitle">Nerode Equivalence</span></div>
+    <div class="thm_thmcontent">
+<p>Let \(M\) be an <span class="ttfamily">AccessibleFinDFA</span> with alphabet \(\alpha \) and state space \(\sigma \). </p>
+<p>A word \(w\) <em>indistinguishes</em> two states \(s_1, s_2 \in \sigma \), denoted \(\text{Indist}_M(w, s_1, s_2)\), if evaluating from both states with input \(w\) leads to the same acceptance outcome: </p>
+<div class="displaymath" id="a0000000007">
+  \[ M.\text{evalFrom}(s_1, w) \in M.\text{accept} \iff M.\text{evalFrom}(s_2, w) \in M.\text{accept} \]
+</div>
+<p>The <em>Nerode equivalence relation</em> \(\sim _{\text{Nerode}}\) on states is defined by: </p>
+<div class="displaymath" id="a0000000008">
+  \[ s_1 \sim _{\text{Nerode}} s_2 \iff \forall w : \text{List}(\alpha ), \text{Indist}_M(w, s_1, s_2) \]
+</div>
+<p>Two states are Nerode equivalent if and only if all words indistinguish them. </p>
+<p>The <em>bounded Nerode equivalence relation</em> \(\sim _{\text{Nerode}}^{(n)}\) at level \(n\) is defined by: </p>
+<div class="displaymath" id="a0000000009">
+  \[ s_1 \sim _{\text{Nerode}}^{(n)} s_2 \iff \forall w : \text{List}(\alpha ), |w| \leq n \implies \text{Indist}_M(w, s_1, s_2) \]
+</div>
+<p>Both relations are equivalence relations (reflexive, symmetric, and transitive). </p>
+<p>Since the alphabet \(\alpha \) is finite, there are only finitely many words of length \(\leq n\), making \(\sim _{\text{Nerode}}^{(n)}\) decidable. </p>
+</div>
+
+    <a class="latex_link" href="sect0003.html#def:nerode-equiv">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.Indist" class="lean_decl">AccessibleFinDFA.Indist</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.nerode" class="lean_decl">AccessibleFinDFA.nerode</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode" class="lean_decl">AccessibleFinDFA.boundedNerode</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeComputable" class="lean_decl">AccessibleFinDFA.boundedNerodeComputable</a></li>
+        
+      </ul>
+  </div>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:bounded-nerode-stabilizes_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:bounded-nerode-stabilizes" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">9</span><span class="lemma_thmtitle">Bounded Nerode Stabilization</span></div>
+    <div class="thm_thmcontent">
+<p>The bounded Nerode relation satisfies the following properties: </p>
+<ol class="enumerate">
+  <li><p><b class="bfseries">Monotonicity</b>: For \(n \leq m\), we have \(\sim _{\text{Nerode}}^{(m)} \subseteq \sim _{\text{Nerode}}^{(n)}\) (the relation becomes finer as the bound increases). </p>
+</li>
+  <li><p><b class="bfseries">Stabilization</b>: If \(\sim _{\text{Nerode}}^{(n)} = \sim _{\text{Nerode}}^{(n+1)}\), then \(\sim _{\text{Nerode}}^{(n)} = \sim _{\text{Nerode}}^{(m)}\) for all \(m \geq n\). </p>
+</li>
+  <li><p><b class="bfseries">Finite stabilization</b>: The relation stabilizes at or before level \(|\sigma |\), i.e., \(\sim _{\text{Nerode}}^{(|\sigma |)} = \sim _{\text{Nerode}}^{(|\sigma |+1)}\). </p>
+</li>
+  <li><p><b class="bfseries">Equivalence with unbounded relation</b>: \(\sim _{\text{Nerode}}^{(|\sigma |)} = \sim _{\text{Nerode}}\). </p>
+</li>
+</ol>
+</div>
+
+    <a class="latex_link" href="sect0003.html#lem:bounded-nerode-stabilizes">LaTeX</a>
+    
+    
+  <div class="tooltip">
+      <span class="lean_link">Lean</span>
+      <ul class="tooltip_list">
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_mono" class="lean_decl">AccessibleFinDFA.boundedNerode_mono</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_stable" class="lean_decl">AccessibleFinDFA.boundedNerode_stable</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_stable_eq_nerode" class="lean_decl">AccessibleFinDFA.boundedNerode_stable_eq_nerode</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeFinpartition_parts_eq_of_card_eq" class="lean_decl">AccessibleFinDFA.boundedNerodeFinpartition_parts_eq_of_card_eq</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeFinpartition_stabilized" class="lean_decl">AccessibleFinDFA.boundedNerodeFinpartition_stabilized</a></li>
+        
+           <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_eq_nerode" class="lean_decl">AccessibleFinDFA.boundedNerode_eq_nerode</a></li>
+        
+      </ul>
+  </div>
     
     
   
@@ -221,6 +447,37 @@
     
       </div>
     </div>
+
+
+    
+    <div class="dep-modal-container" id="lem:hom-pres-lang_modal">
+      <div class="dep-modal-content">
+          <button class="dep-closebtn">
+<svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        
+  <div class="thm" id="lem:hom-pres-lang" style="display: none">
+    <div class="thm_thmheading">
+      <span class="lemma_thmcaption">
+      Lemma
+      </span>
+      <span class="lemma_thmlabel">6</span><span class="lemma_thmtitle">Morphism Preserves Language</span></div>
+    <div class="thm_thmcontent">
+<p>If there exists a morphism \(f : M \to _\ell N\), then \(M.\text{accepts} = N.\text{accepts}\). </p>
+</div>
+
+    <a class="latex_link" href="sect0002.html#lem:hom-pres-lang">LaTeX</a>
+    
+    
+  <a class="lean_link lean_decl" href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Hom.pres_lang">Lean</a>
+    
+    
+  
+    
+  </div>
+    
+      </div>
+    </div>
 </div>
 </div> <!-- content -->
 </div> <!-- wrapper -->
@@ -240,7 +497,7 @@ graphContainer.graphviz({useWorker: true})
     .width(width)
     .height(height)
     .fit(true)
-    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:dfa"	[color=green,		fillcolor="#B0ECA3",		label=dfa,		shape=box,		style=filled];	"def:fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="fin-dfa",		shape=box,		style=filled];	"def:accessible-fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="accessible-fin-dfa",		shape=box,		style=filled];	"def:fin-dfa" -> "def:accessible-fin-dfa"	[style=dashed];	"lem:exists-short-access-word"	[color=green,		fillcolor="#1CAC78",		label="exists-short-access-word",		shape=ellipse,		style=filled];	"def:accessible-fin-dfa" -> "lem:exists-short-access-word"	[style=dashed];}`)
+    .renderDot(`strict digraph "" {	graph [bgcolor=transparent];	node [label="\N",		penwidth=1.8	];	edge [arrowhead=vee];	"def:accessible-fin-dfa-le"	[label="accessible-fin-dfa-le",		shape=box];	"def:fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="fin-dfa",		shape=box,		style=filled];	"def:accessible-fin-dfa"	[color=green,		fillcolor="#B0ECA3",		label="accessible-fin-dfa",		shape=box,		style=filled];	"def:fin-dfa" -> "def:accessible-fin-dfa"	[style=dashed];	"def:accessible-fin-dfa" -> "def:accessible-fin-dfa-le"	[style=dashed];	"def:nerode-equiv"	[color=blue,		fillcolor="#A3D6FF",		label="nerode-equiv",		shape=box,		style=filled];	"def:accessible-fin-dfa" -> "def:nerode-equiv"	[style=dashed];	"lem:exists-short-access-word"	[color=green,		fillcolor="#1CAC78",		label="exists-short-access-word",		shape=ellipse,		style=filled];	"def:accessible-fin-dfa" -> "lem:exists-short-access-word"	[style=dashed];	"lem:bounded-nerode-stabilizes"	[label="bounded-nerode-stabilizes",		shape=ellipse];	"def:nerode-equiv" -> "lem:bounded-nerode-stabilizes"	[style=dashed];	"def:dfa"	[color=green,		fillcolor="#B0ECA3",		label=dfa,		shape=box,		style=filled];	"def:dfa-hom"	[color=blue,		fillcolor="#A3D6FF",		label="dfa-hom",		shape=box,		style=filled];	"def:dfa" -> "def:dfa-hom"	[style=dashed];	"def:dfa-hom" -> "def:accessible-fin-dfa-le"	[style=dashed];	"lem:hom-pres-lang"	[label="hom-pres-lang",		shape=ellipse];	"def:dfa-hom" -> "lem:hom-pres-lang"	[style=dashed];}`)
     .on("end", interactive);
 
 latexLabelEscaper = function(label) {

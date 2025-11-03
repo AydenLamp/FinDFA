@@ -82,16 +82,13 @@ induce the same number of equivalence classes, they are equal. Show that the num
 is bounded by `|σ|` and use a pigeonhole argument to conclude that `boundedNerode` stabilizes
 at or before level `|σ|`. Conclude that `boundedNerode |σ| = nerode`.
 dependencies : nerode-equiv
-
+-/
 
 namespace AccessibleFinDFA
 
 universe u v
 
-variable {α : Type u} [Fintype α] [DecidableEq α]
-variable {σ : Type v} [σFin : Fintype σ] [σDec : DecidableEq σ]
-
-variable (M : AccessibleFinDFA α σ)
+variable {α : Type u} {σ : Type v} (M : AccessibleFinDFA α σ)
 
 /-- A word indistinguishes two states if evaluating from them leads to the same acceptance
 outcomes. -/
@@ -135,12 +132,16 @@ We then prove that this computable version is equivalent to the original one, an
 thus we can transfer the decidability instance to `boundedNerode`.
 -/
 
+section Decidability
+
+variable [Fintype α] [DecidableEq α]
+
 /-- Computable version of bounded Nerode that quantifies over a `Finset` of words. -/
 def boundedNerodeComputable (n : ℕ) (s₁ s₂ : σ) : Prop :=
   ∀ w ∈ M.getWordsLeqLength n, M.Indist w s₁ s₂
 
 /-- The computable version is equivalent to the original bounded Nerode relation. -/
-lemma boundedNerodeComputable_correct (n : ℕ) (s₁ s₂ : σ):
+lemma boundedNerodeComputable_correct (n : ℕ) (s₁ s₂ : σ) :
     M.boundedNerodeComputable n s₁ s₂ ↔ M.boundedNerode n s₁ s₂ := by
   constructor
   · intro h w hw
@@ -151,6 +152,8 @@ lemma boundedNerodeComputable_correct (n : ℕ) (s₁ s₂ : σ):
     apply h
     rw [FinDFA.getWordsLeqLength_correct] at hw
     exact hw
+
+variable [Fintype σ] [DecidableEq σ]
 
 instance boundedNerodeComputable_decidable (n : ℕ) :
     DecidableRel (M.boundedNerodeComputable n) := by
@@ -163,6 +166,8 @@ instance boundedNerode_decidable (n : ℕ) : DecidableRel (M.boundedNerode n) :=
   apply decidable_of_iff
     (M.boundedNerodeComputable n s₁ s₂)
     (M.boundedNerodeComputable_correct n s₁ s₂)
+
+end Decidability
 
 /-!
 ### BoundedNerode Monotonicity and Stabilization
@@ -234,7 +239,9 @@ lemma boundedNerode_stable_succ (n : ℕ)
   have hdist' : ¬ M.boundedNerode (n + 1) (M.step s₁ (w.head hwPos))
       (M.step s₂ (w.head hwPos)) := by
     simp [boundedNerode]
-    use w.tail; constructor; omega; exact hdist
+    use w.tail; constructor
+    · omega
+    · exact hdist
   have hdist'' : ¬ M.boundedNerode n (M.step s₁ (w.head hwPos))
       (M.step s₂ (w.head hwPos)) := by
     rw [heq]; exact hdist'
@@ -243,7 +250,9 @@ lemma boundedNerode_stable_succ (n : ℕ)
   rw [← indist_cons] at htdist
   have hdist''' : ¬ M.boundedNerode (n + 1) s₁ s₂ := by
     simp [boundedNerode]
-    use (w.head hwPos :: t); constructor; simp [htlen]; exact htdist
+    use (w.head hwPos :: t); constructor
+    · simp [htlen]
+    · exact htdist
   contradiction
 
 /-- If bounded Nerode stabilizes at level `n`, it remains stable for all higher levels. -/
@@ -294,6 +303,10 @@ parts and thus induce the same equivalence relation. We then show that the finpa
 by `boundedNerode n` has at most `|σ|` parts, and thus the partition must stabilize by level `|σ|`.
 -/
 
+section Finpartitions
+
+variable [σFin : Fintype σ] [DecidableEq σ] [Fintype α] [DecidableEq α]
+
 /-- The finpartition of the state space induced by bounded Nerode at level `n`. -/
 def boundedNerodeFinpartition (n : ℕ) : Finpartition (@Finset.univ σ σFin) :=
   Finpartition.ofSetoid (M.boundedNerode n)
@@ -309,7 +322,9 @@ lemma boundedNerodeFinpartition_mono {n m : ℕ} (hle : n ≤ m) :
   have hnonempty := Finpartition.nonempty_of_mem_parts (M.boundedNerodeFinpartition m) ht
   rcases hnonempty with ⟨s, hs⟩
   have ht' : (M.boundedNerodeFinpartition m).part s = t := by
-    apply Finpartition.part_eq_of_mem; exact ht; exact hs
+    apply Finpartition.part_eq_of_mem
+    · exact ht
+    · exact hs
   use (M.boundedNerodeFinpartition n).part s
   simp
   intros s₂ hs₂
@@ -387,7 +402,9 @@ lemma boundedNerodeFinpartition_parts_eq_of_card_eq {n m : ℕ}
           exact Finpartition.eq_of_mem_parts P hs₁ hs₂ hs₁_mem hs₂_mem
         have hsum₁ : P.parts.card = ∑ p ∈ P.parts, 1 := by simp
         have hsum₂ : ∑ p ∈ P.parts, 1 < ∑ p ∈ P.parts, (S p).card := by
-          apply Finset.sum_lt_sum; exact card_pos; use p
+          apply Finset.sum_lt_sum
+          · exact card_pos
+          · use p
         rw [← hsum₁, ← hcard_eq, ← union_eq ] at hsum₂
         omega
       specialize card_pos p hp
@@ -426,8 +443,10 @@ lemma boundedNerodeFinpartition_parts_eq_of_card_eq {n m : ℕ}
     intros s hs
     rw [union_eq] at hs; simp_all
     obtain ⟨p, ⟨hp₁, hp₂⟩⟩ := hs
-    rw [S_eq] at hp₂; have hs : s = p := Finset.eq_of_mem_singleton hp₂
-    rw [hs]; exact hp₁; exact hp₁
+    rw [S_eq] at hp₂
+    · have hs : s = p := Finset.eq_of_mem_singleton hp₂
+      rw [hs]; exact hp₁
+    · exact hp₁
   have parts_subset₂ : P.parts ⊆ Q.parts := by
     intros s hs
     rw [union_eq]
@@ -524,8 +543,6 @@ instance nerode_quotient_fintype : Fintype (Quotient (M.nerode)) := by
 instance nerode_quotient_decidableEq : DecidableEq (Quotient (M.nerode)) := by
   apply @Quotient.decidableEq σ (M.nerode) (nerode_decidable M)
 
+end Finpartitions
+
 end AccessibleFinDFA
-
--/
-
-example : 1 + 1 = 2 := by rfl

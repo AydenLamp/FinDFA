@@ -1,0 +1,64 @@
+% DFA Morphisms and Partial Order on AccessibleFinDFAs
+\chapter{DFA Morphisms and Partial Order on AccessibleFinDFAs}
+
+\begin{definition}[DFA Morphism]
+  \label{def:dfa-hom}
+  \lean{DFA.Hom, DFA.Equiv}
+  \uses{def:dfa}
+  
+  A \emph{morphism} between DFAs $M : \text{DFA}(\alpha, \sigma_1)$ and $N : \text{DFA}(\alpha, \sigma_2)$, 
+  denoted $M \to_\ell N$, is a function $f : \sigma_1 \to \sigma_2$ that preserves:
+  \begin{itemize}
+    \item The start state: $f(M.\text{start}) = N.\text{start}$
+    \item The accepting states: $q \in M.\text{accept} \iff f(q) \in N.\text{accept}$
+    \item State transitions: $f(M.\text{evalFrom}(q, w)) = N.\text{evalFrom}(f(q), w)$ for all states $q$ and words $w$
+  \end{itemize}
+  
+  An \emph{equivalence} of DFAs, denoted $M \simeq_\ell N$, is a bijective morphism with an inverse morphism.
+\end{definition}
+
+\begin{lemma}[Morphism Preserves Language]
+  \label{lem:hom-pres-lang}
+  \lean{DFA.Hom.pres_lang}
+  \uses{def:dfa-hom}
+  
+  If there exists a morphism $f : M \to_\ell N$, then $M.\text{accepts} = N.\text{accepts}$.
+\end{lemma}
+
+\begin{definition}[Partial Order on AccessibleFinDFAs]
+  \label{def:accessible-fin-dfa-le}
+  \lean{AccessibleFinDFA.HomSurj, AccessibleFinDFA.le, AccessibleFinDFA.le_refl, AccessibleFinDFA.le_trans, AccessibleFinDFA.le_antisymm, AccessibleFinDFA.IsMinimal}
+  \uses{def:accessible-fin-dfa, def:dfa-hom}
+  
+  We define a partial order on \texttt{AccessibleFinDFA}s by the existence of surjective morphisms 
+  between their underlying DFAs. 
+  
+  A \emph{surjective morphism} $M \twoheadrightarrow N$ between accessible finite DFAs is a morphism 
+  on their underlying DFAs that is surjective on states.
+  
+  We define $M \leq N$ if and only if there exists a surjective morphism $N \twoheadrightarrow M$.
+  
+  This relation satisfies:
+  \begin{itemize}
+    \item \textbf{Reflexivity}: $M \leq M$ for all $M$
+    \item \textbf{Transitivity}: If $M \leq N$ and $N \leq O$, then $M \leq O$
+    \item \textbf{Antisymmetry up to equivalence}: If $M \leq N$ and $N \leq M$, then 
+          $M.\text{toDFA} \simeq_\ell N.\text{toDFA}$
+  \end{itemize}
+  
+  An \texttt{AccessibleFinDFA} $M$ is \emph{minimal} if for every $N$ with $N \leq M$, 
+  we have $M.\text{toDFA} \simeq_\ell N.\text{toDFA}$.
+\end{definition}
+
+\begin{proof}[Proof of Partial Order Properties]
+  
+  \textbf{Reflexivity}: The identity morphism on $M.\text{toDFA}$ is surjective.
+  
+  \textbf{Transitivity}: Given surjective morphisms $O \twoheadrightarrow N$ and $N \twoheadrightarrow M$, 
+  their composition $O \twoheadrightarrow M$ is also surjective.
+  
+  \textbf{Antisymmetry}: Given surjective morphisms $f : N \twoheadrightarrow M$ and $g : M \twoheadrightarrow N$, 
+  we use the accessibility property to show these are mutual inverses. For any state $s$ in $M$, 
+  there exists a word $w$ such that $M.\text{evalFrom}(M.\text{start}, w) = s$. Using the morphism 
+  properties and surjectivity, we can show $g \circ f = \text{id}$ and $f \circ g = \text{id}$.
+\end{proof}

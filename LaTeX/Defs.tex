@@ -24,8 +24,8 @@ Decidable equality means that for any two elements of a type, we can computation
 
 \begin{definition}[Computable Finite DFA]
 \label{def:fin-dfa}
-We define \texttt{FinDFA} $\alpha$ $\sigma$ as a computable version of \texttt{DFA} $\alpha$ $\sigma$ that enables algorithmic manipulation. A \texttt{FinDFA} differs from a \texttt{DFA} in several key ways:
-
+\lean{FinDFA}
+\leanok
 \begin{itemize}
     \item It requires \texttt{Fintype} instances on both the alphabet $\alpha$ and state space $\sigma$. A \texttt{Fintype} is a type that has finitely many elements and provides a way to enumerate all of them.
     \item It requires \texttt{DecidableEq} instances on both types, enabling computational equality testing.

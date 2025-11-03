@@ -25,7 +25,7 @@ morphism from `N.toDFA` to `M.toDFA`.
 
 ## Main theorems
 
-* `DFA.hom_pres_lang` - `M.accepts = N.accepts` when there exists `f : M →ₗ N`.
+* `DFA.Hom.pres_lang` - `M.accepts = N.accepts` when there exists `f : M →ₗ N`.
 * `AccessibleFinDFA.le_refl` - Reflexivity of `≤`.
 * `AccessibleFinDFA.le_trans` - Transitivity of `≤`.
 * `AccessibleFinDFA.le_antisymm` - Antisymmetry of `≤` up to equivalence of underlying DFAs.
@@ -58,7 +58,6 @@ existence of a surjective morphism between their underlying DFAs. Prove that thi
 a partial order up to equivalence of the underlying DFAs.
 Explain what `IsMinimal` means by this definition.
 Dependencies : accessible-fin-dfa, dfa-hom
-
 -/
 
 namespace DFA
@@ -108,9 +107,13 @@ def Hom.refl (M : DFA α σ₁) : M →ₗ M where
 
 /-- An equivalence of DFAs is a bijective morphism. -/
 structure Equiv (M : DFA α σ₁) (N : DFA α σ₂) where
+  /-- The forward morphism. -/
   toDFAHom : M →ₗ N
+  /-- The reverse morphism. -/
   toInvDFAHom : N →ₗ M
+  /-- Left inverse property. -/
   left_inv : Function.LeftInverse toInvDFAHom.toFun toDFAHom.toFun
+  /-- Right inverse property. -/
   right_inv : Function.RightInverse toInvDFAHom.toFun toDFAHom.toFun
 
 /-- `M ≃ₗ N` denotes the type of `DFA.Equiv M N`. -/
@@ -170,7 +173,7 @@ lemma le_refl (M : AccessibleFinDFA α σ₁) : M ≤ M := by
   exact ⟨s, rfl⟩
 
 /-- Transitivity of the preorder on `AccessibleFinDFA`s. -/
-lemma le_trans {M : AccessibleFinDFA α σ₁} {N : AccessibleFinDFA α σ₂}
+lemma le_trans {σ₃ : Type*} {M : AccessibleFinDFA α σ₁} {N : AccessibleFinDFA α σ₂}
   {O : AccessibleFinDFA α σ₃} (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
   obtain f := h₁.some
   obtain g := h₂.some
@@ -236,7 +239,6 @@ lemma le_antisymm (M : AccessibleFinDFA α σ₁) (N : AccessibleFinDFA α σ₂
       simp_all)
 
 set_option linter.unusedVariables false in
-
 /-- An `AccessibleFinDFA` is minimal if every smaller DFA is equivalent to it. -/
 def IsMinimal (M : AccessibleFinDFA α σ₁) : Prop :=
   ∀ {σ₂ : Type*} [Fintype σ₂] [DecidableEq σ₂] (N : AccessibleFinDFA α σ₂) (hle : N ≤ M),

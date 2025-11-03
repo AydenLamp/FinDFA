@@ -58,7 +58,8 @@ Content : Explain that this is Mathlib's DFA defintitoin.
 Explain that `DFA α σ` has fields `step`, `start`, `accept`,
 and methods `eval`, `evalFrom`, `accepts`. Explain
 the types of these.
-Explain that this definition does not require the state space or alphabet to be finite or decidable.
+Explain that this definition does not require the state space or alphabet to be finite or
+decidable.
 (explain what decidable equality is)
 Dependencies : None
 
@@ -69,7 +70,8 @@ lean defs :
 Content : Explain the definition of the `FinDFA` structure, and how it differes from `DFA`
 by requiring `Fintype` and `DecidableEq` instances on the alphabet and state
 space (explain what those classes are)
-and by requiring the accepting states to be a `Finset` rather than a `Set` (explain the differnece)
+and by requiring the accepting states to be a `Finset` rather than a `Set` (explain the
+differnece)
 Explain how this allows a decidable procedure (what is that?)
 for determining if a state is accepting. Explain how this can be converted to a `DFA` in
 lean and how we use the `DFA` definitions for .evalFrom, .accepts, etc.
@@ -109,7 +111,8 @@ abbrev prependInjection : α ↪ List α where
   inj' := by simp_all [Function.Injective]
 
 /-- Given a word, the finset of all one-letter (preprended) extensions. -/
-abbrev getNextWords : Finset (List α) := Finset.map w.prependInjection (Finset.univ : Finset α)
+abbrev getNextWords : Finset (List α) :=
+  Finset.map w.prependInjection (Finset.univ : Finset α)
 
 end List
 
@@ -338,7 +341,8 @@ variable {α : Type u} {σ : Type v}
 variable [Fintype α] [DecidableEq α] [Fintype σ] [DecidableEq σ]
 
 /-- Convert a `FinDFA` to an `AccessibleFinDFA` by restricting to accessible states. -/
-def toAccessible (M : FinDFA α σ) : AccessibleFinDFA α {s : σ // M.IsAccessibleState s} where
+def toAccessible (M : FinDFA α σ) :
+    AccessibleFinDFA α {s : σ // M.IsAccessibleState s} where
   step := fun s a => ⟨M.step s.val a, by
       simp_all [IsAccessibleState]
       obtain ⟨s, ⟨w, hs⟩⟩ := s

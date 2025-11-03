@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DFA Morphisms and Partial Order on AccessibleFinDFAs</title>
+<link rel="next" href="sect0003.html" title="Nerode Equivalence on AccessibleFinDFAs" />
+<link rel="prev" href="sect0001.html" title="Finite Deterministic Automata" />
+<link rel="up" href="index.html" title="Thesis" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Thesis</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Finite Deterministic Automata</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">DFA Morphisms and Partial Order on AccessibleFinDFAs</span></a>
+ </li>
+<li class="">
+  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Nerode Equivalence on AccessibleFinDFAs</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000003">2 DFA Morphisms and Partial Order on AccessibleFinDFAs</h1>
+<div class="definition_thmwrapper theorem-style-definition" id="def:dfa-hom">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">5</span>
+    <span class="definition_thmtitle">DFA Morphism</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#def:dfa-hom">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#def:dfa">Definition 1</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Hom" class="lean_decl">DFA.Hom</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Equiv" class="lean_decl">DFA.Equiv</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<p>A <em>morphism</em> between DFAs \(M : \text{DFA}(\alpha , \sigma _1)\) and \(N : \text{DFA}(\alpha , \sigma _2)\), denoted \(M \to _\ell N\), is a function \(f : \sigma _1 \to \sigma _2\) that preserves: </p>
+<ul class="itemize">
+  <li><p>The start state: \(f(M.\text{start}) = N.\text{start}\) </p>
+</li>
+  <li><p>The accepting states: \(q \in M.\text{accept} \iff f(q) \in N.\text{accept}\) </p>
+</li>
+  <li><p>State transitions: \(f(M.\text{evalFrom}(q, w)) = N.\text{evalFrom}(f(q), w)\) for all states \(q\) and words \(w\) </p>
+</li>
+</ul>
+<p>An <em>equivalence</em> of DFAs, denoted \(M \simeq _\ell N\), is a bijective morphism with an inverse morphism. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:hom-pres-lang">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">6</span>
+    <span class="lemma_thmtitle">Morphism Preserves Language</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#lem:hom-pres-lang">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0002.html#def:dfa-hom">Definition 5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/DFA.Hom.pres_lang" class="lean_decl">DFA.Hom.pres_lang</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
+<p>If there exists a morphism \(f : M \to _\ell N\), then \(M.\text{accepts} = N.\text{accepts}\). </p>
+
+  </div>
+</div>
+<div class="definition_thmwrapper theorem-style-definition" id="def:accessible-fin-dfa-le">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">7</span>
+    <span class="definition_thmtitle">Partial Order on AccessibleFinDFAs</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0002.html#def:accessible-fin-dfa-le">#</a>
+    
+    <a class="icon proof" href="sect0002.html#a0000000006"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#def:accessible-fin-dfa">Definition 3</a></li>
+          
+          <li><a href="sect0002.html#def:dfa-hom">Definition 5</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.HomSurj" class="lean_decl">AccessibleFinDFA.HomSurj</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le" class="lean_decl">AccessibleFinDFA.le</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_refl" class="lean_decl">AccessibleFinDFA.le_refl</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_trans" class="lean_decl">AccessibleFinDFA.le_trans</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.le_antisymm" class="lean_decl">AccessibleFinDFA.le_antisymm</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.IsMinimal" class="lean_decl">AccessibleFinDFA.IsMinimal</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<p>We define a partial order on <span class="ttfamily">AccessibleFinDFA</span>s by the existence of surjective morphisms between their underlying DFAs. </p>
+<p>A <em>surjective morphism</em> \(M \twoheadrightarrow N\) between accessible finite DFAs is a morphism on their underlying DFAs that is surjective on states. </p>
+<p>We define \(M \leq N\) if and only if there exists a surjective morphism \(N \twoheadrightarrow M\). </p>
+<p>This relation satisfies: </p>
+<ul class="itemize">
+  <li><p><b class="bfseries">Reflexivity</b>: \(M \leq M\) for all \(M\) </p>
+</li>
+  <li><p><b class="bfseries">Transitivity</b>: If \(M \leq N\) and \(N \leq O\), then \(M \leq O\) </p>
+</li>
+  <li><p><b class="bfseries">Antisymmetry up to equivalence</b>: If \(M \leq N\) and \(N \leq M\), then \(M.\text{toDFA} \simeq _\ell N.\text{toDFA}\) </p>
+</li>
+</ul>
+<p>An <span class="ttfamily">AccessibleFinDFA</span> \(M\) is <em>minimal</em> if for every \(N\) with \(N \leq M\), we have \(M.\text{toDFA} \simeq _\ell N.\text{toDFA}\). </p>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000006">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof of Partial Order Properties
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p><b class="bfseries">Reflexivity</b>: The identity morphism on \(M.\text{toDFA}\) is surjective. </p>
+<p><b class="bfseries">Transitivity</b>: Given surjective morphisms \(O \twoheadrightarrow N\) and \(N \twoheadrightarrow M\), their composition \(O \twoheadrightarrow M\) is also surjective. </p>
+<p><b class="bfseries">Antisymmetry</b>: Given surjective morphisms \(f : N \twoheadrightarrow M\) and \(g : M \twoheadrightarrow N\), we use the accessibility property to show these are mutual inverses. For any state \(s\) in \(M\), there exists a word \(w\) such that \(M.\text{evalFrom}(M.\text{start}, w) = s\). Using the morphism properties and surjectivity, we can show \(g \circ f = \text{id}\) and \(f \circ g = \text{id}\). </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0001.html" title="Finite Deterministic Automata"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Thesis"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+  <a href="sect0003.html" title="Nerode Equivalence on AccessibleFinDFAs"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

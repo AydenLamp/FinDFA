@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2022/dev/Debian) (preloaded format=xelatex 2025.11.2)  2 NOV 2025 22:45
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2022/dev/Debian) (preloaded format=xelatex 2025.11.2)  3 NOV 2025 01:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -732,17 +732,25 @@ te. Formally, \TU/lmtt/m/n/10 FinDFA.IsAccessibleState
 
 [1
 
-]))) [2] (/workspaces/FinDFA/blueprint/print/print.aux)
+]) (/workspaces/FinDFA/blueprint/print/../../LaTeX/Hom.tex [2]
+Chapter 2.
+[3
+
+]) (/workspaces/FinDFA/blueprint/print/../../LaTeX/Nerode.tex [4]
+Chapter 3.
+[5
+
+]))) [6] (/workspaces/FinDFA/blueprint/print/print.aux)
 Package rerunfilecheck Info: File `print.out' has not changed.
-(rerunfilecheck)             Checksum: 7F417500ABA8AE1BB846CC816F9D7905;194.
+(rerunfilecheck)             Checksum: B54FEF9A6060F7377CB4F6476BA79DE6;762.
  ) 
 Here is how much of TeX's memory you used:
- 16565 strings out of 478190
- 307993 string characters out of 5854827
- 801831 words of memory out of 5000000
- 36956 multiletter control sequences out of 15000+600000
- 474614 words of font info for 75 fonts, out of 8000000 for 9000
+ 16594 strings out of 478190
+ 308832 string characters out of 5854827
+ 803831 words of memory out of 5000000
+ 36970 multiletter control sequences out of 15000+600000
+ 474654 words of font info for 80 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 86i,6n,115p,506b,422s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 86i,6n,115p,506b,430s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on /workspaces/FinDFA/blueprint/print/print.pdf (3 pages).
+Output written on /workspaces/FinDFA/blueprint/print/print.pdf (7 pages).

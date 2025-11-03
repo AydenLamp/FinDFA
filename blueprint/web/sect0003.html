@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nerode Equivalence on AccessibleFinDFAs</title>
+<link rel="prev" href="sect0002.html" title="DFA Morphisms and Partial Order on AccessibleFinDFAs" />
+<link rel="up" href="index.html" title="Thesis" />
+<link rel="stylesheet" href="styles/theme-white.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/blueprint.css" />
+<link rel="stylesheet" href="styles/extra_styles.css" />
+</head>
+
+<body>
+<header>
+<svg  id="toc-toggle" class="icon icon-list-numbered "><use xlink:href="symbol-defs.svg#icon-list-numbered"></use></svg>
+<h1 id="doc_title"><a href="index.html">Thesis</a></h1>
+</header>
+
+<div class="wrapper">
+<nav class="toc">
+<ul class="sub-toc-0">
+<li class="">
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Finite Deterministic Automata</span></a>
+ </li>
+<li class="">
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">DFA Morphisms and Partial Order on AccessibleFinDFAs</span></a>
+ </li>
+<li class=" active current">
+  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Nerode Equivalence on AccessibleFinDFAs</span></a>
+ </li>
+<li ><a href="dep_graph_document.html">Dependency graph</a></li>
+</ul>
+</nav>
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+<h1 id="a0000000004">3 Nerode Equivalence on AccessibleFinDFAs</h1>
+<div class="definition_thmwrapper theorem-style-definition" id="def:nerode-equiv">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">8</span>
+    <span class="definition_thmtitle">Nerode Equivalence</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#def:nerode-equiv">#</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0001.html#def:accessible-fin-dfa">Definition 3</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.Indist" class="lean_decl">AccessibleFinDFA.Indist</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.nerode" class="lean_decl">AccessibleFinDFA.nerode</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode" class="lean_decl">AccessibleFinDFA.boundedNerode</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeComputable" class="lean_decl">AccessibleFinDFA.boundedNerodeComputable</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  
+<p>Let \(M\) be an <span class="ttfamily">AccessibleFinDFA</span> with alphabet \(\alpha \) and state space \(\sigma \). </p>
+<p>A word \(w\) <em>indistinguishes</em> two states \(s_1, s_2 \in \sigma \), denoted \(\text{Indist}_M(w, s_1, s_2)\), if evaluating from both states with input \(w\) leads to the same acceptance outcome: </p>
+<div class="displaymath" id="a0000000007">
+  \[ M.\text{evalFrom}(s_1, w) \in M.\text{accept} \iff M.\text{evalFrom}(s_2, w) \in M.\text{accept} \]
+</div>
+<p>The <em>Nerode equivalence relation</em> \(\sim _{\text{Nerode}}\) on states is defined by: </p>
+<div class="displaymath" id="a0000000008">
+  \[ s_1 \sim _{\text{Nerode}} s_2 \iff \forall w : \text{List}(\alpha ), \text{Indist}_M(w, s_1, s_2) \]
+</div>
+<p>Two states are Nerode equivalent if and only if all words indistinguish them. </p>
+<p>The <em>bounded Nerode equivalence relation</em> \(\sim _{\text{Nerode}}^{(n)}\) at level \(n\) is defined by: </p>
+<div class="displaymath" id="a0000000009">
+  \[ s_1 \sim _{\text{Nerode}}^{(n)} s_2 \iff \forall w : \text{List}(\alpha ), |w| \leq n \implies \text{Indist}_M(w, s_1, s_2) \]
+</div>
+<p>Both relations are equivalence relations (reflexive, symmetric, and transitive). </p>
+<p>Since the alphabet \(\alpha \) is finite, there are only finitely many words of length \(\leq n\), making \(\sim _{\text{Nerode}}^{(n)}\) decidable. </p>
+
+  </div>
+</div>
+<div class="lemma_thmwrapper theorem-style-plain" id="lem:bounded-nerode-stabilizes">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">9</span>
+    <span class="lemma_thmtitle">Bounded Nerode Stabilization</span>
+    <div class="thm_header_extras">
+
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0003.html#lem:bounded-nerode-stabilizes">#</a>
+    
+    <a class="icon proof" href="sect0003.html#a0000000010"><svg  class="icon icon-cogs "><use xlink:href="symbol-defs.svg#icon-cogs"></use></svg>
+</a>
+    
+    
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="sect0003.html#def:nerode-equiv">Definition 8</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_mono" class="lean_decl">AccessibleFinDFA.boundedNerode_mono</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_stable" class="lean_decl">AccessibleFinDFA.boundedNerode_stable</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_stable_eq_nerode" class="lean_decl">AccessibleFinDFA.boundedNerode_stable_eq_nerode</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeFinpartition_parts_eq_of_card_eq" class="lean_decl">AccessibleFinDFA.boundedNerodeFinpartition_parts_eq_of_card_eq</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerodeFinpartition_stabilized" class="lean_decl">AccessibleFinDFA.boundedNerodeFinpartition_stabilized</a></li>
+          
+          <li><a href="https://AydenLamp.github.io/FinDFA/docs/find/#doc/AccessibleFinDFA.boundedNerode_eq_nerode" class="lean_decl">AccessibleFinDFA.boundedNerode_eq_nerode</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="lemma_thmcontent">
+  
+<p>The bounded Nerode relation satisfies the following properties: </p>
+<ol class="enumerate">
+  <li><p><b class="bfseries">Monotonicity</b>: For \(n \leq m\), we have \(\sim _{\text{Nerode}}^{(m)} \subseteq \sim _{\text{Nerode}}^{(n)}\) (the relation becomes finer as the bound increases). </p>
+</li>
+  <li><p><b class="bfseries">Stabilization</b>: If \(\sim _{\text{Nerode}}^{(n)} = \sim _{\text{Nerode}}^{(n+1)}\), then \(\sim _{\text{Nerode}}^{(n)} = \sim _{\text{Nerode}}^{(m)}\) for all \(m \geq n\). </p>
+</li>
+  <li><p><b class="bfseries">Finite stabilization</b>: The relation stabilizes at or before level \(|\sigma |\), i.e., \(\sim _{\text{Nerode}}^{(|\sigma |)} = \sim _{\text{Nerode}}^{(|\sigma |+1)}\). </p>
+</li>
+  <li><p><b class="bfseries">Equivalence with unbounded relation</b>: \(\sim _{\text{Nerode}}^{(|\sigma |)} = \sim _{\text{Nerode}}\). </p>
+</li>
+</ol>
+
+  </div>
+</div>
+<div class="proof_wrapper" id="a0000000010">
+  <div class="proof_heading">
+    <span class="proof_caption">
+    Proof of Stabilization
+    </span>
+    <span class="expand-proof">▶</span>
+  </div>
+  <div class="proof_content">
+  <p>We use finpartitions to prove stabilization. Each bounded Nerode relation \(\sim _{\text{Nerode}}^{(n)}\) induces a partition of the state space \(\sigma \) into equivalence classes. </p>
+<p><b class="bfseries">Key insight</b>: If two bounded Nerode relations induce partitions with the same number of parts, then the relations are equal. </p>
+<p><b class="bfseries">Monotonicity</b>: Since longer words provide more distinguishing power, \(\sim _{\text{Nerode}}^{(n+1)} \subseteq \sim _{\text{Nerode}}^{(n)}\). </p>
+<p><b class="bfseries">Cardinality bound</b>: Each partition has at most \(|\sigma |\) parts since there are only \(|\sigma |\) states. </p>
+<p><b class="bfseries">Pigeonhole argument</b>: Consider the sequence of partition cardinalities: </p>
+<div class="displaymath" id="a0000000011">
+  \[ |\text{parts}(\sim _{\text{Nerode}}^{(0)})|, |\text{parts}(\sim _{\text{Nerode}}^{(1)})|, \ldots  \]
+</div>
+<p>This is a weakly increasing sequence (by monotonicity) bounded above by \(|\sigma |\). Either: </p>
+<ul class="itemize">
+  <li><p>The sequence stabilizes at some level \(n {\lt} |\sigma |\), or </p>
+</li>
+  <li><p>At level \(|\sigma |\), we have \(|\text{parts}(\sim _{\text{Nerode}}^{(|\sigma |)})| = |\sigma |\) </p>
+</li>
+</ul>
+<p>In both cases, stabilization occurs by level \(|\sigma |\). </p>
+<p><b class="bfseries">Equivalence with unbounded relation</b>: Once stabilized, the bounded relation equals the unbounded Nerode relation since no additional distinguishing power is gained from longer words. </p>
+
+  </div>
+</div>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+  <a href="sect0002.html" title="DFA Morphisms and Partial Order on AccessibleFinDFAs"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+</a>
+  <a href="index.html" title="Thesis"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
+</a>
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>

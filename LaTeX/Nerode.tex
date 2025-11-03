@@ -1,0 +1,78 @@
+\chapter{Nerode Equivalence on AccessibleFinDFAs}
+% Nerode Equivalence on AccessibleFinDFAs
+
+\begin{definition}[Nerode Equivalence]
+  \label{def:nerode-equiv}
+  \lean{AccessibleFinDFA.Indist, AccessibleFinDFA.nerode, AccessibleFinDFA.boundedNerode, AccessibleFinDFA.boundedNerodeComputable}
+  \uses{def:accessible-fin-dfa}
+  
+  Let $M$ be an \texttt{AccessibleFinDFA} with alphabet $\alpha$ and state space $\sigma$.
+  
+  A word $w$ \emph{indistinguishes} two states $s_1, s_2 \in \sigma$, denoted $\text{Indist}_M(w, s_1, s_2)$, 
+  if evaluating from both states with input $w$ leads to the same acceptance outcome:
+  $$M.\text{evalFrom}(s_1, w) \in M.\text{accept} \iff M.\text{evalFrom}(s_2, w) \in M.\text{accept}$$
+  
+  The \emph{Nerode equivalence relation} $\sim_{\text{Nerode}}$ on states is defined by:
+  $$s_1 \sim_{\text{Nerode}} s_2 \iff \forall w : \text{List}(\alpha), \text{Indist}_M(w, s_1, s_2)$$
+  
+  Two states are Nerode equivalent if and only if all words indistinguish them.
+  
+  The \emph{bounded Nerode equivalence relation} $\sim_{\text{Nerode}}^{(n)}$ at level $n$ is defined by:
+  $$s_1 \sim_{\text{Nerode}}^{(n)} s_2 \iff \forall w : \text{List}(\alpha), |w| \leq n \implies \text{Indist}_M(w, s_1, s_2)$$
+  
+  Both relations are equivalence relations (reflexive, symmetric, and transitive).
+  
+  Since the alphabet $\alpha$ is finite, there are only finitely many words of length $\leq n$, 
+  making $\sim_{\text{Nerode}}^{(n)}$ decidable.
+\end{definition}
+
+\begin{lemma}[Bounded Nerode Stabilization]
+  \label{lem:bounded-nerode-stabilizes}
+  \lean{AccessibleFinDFA.boundedNerode_mono, AccessibleFinDFA.boundedNerode_stable, AccessibleFinDFA.boundedNerode_stable_eq_nerode, AccessibleFinDFA.boundedNerodeFinpartition_parts_eq_of_card_eq, AccessibleFinDFA.boundedNerodeFinpartition_stabilized, AccessibleFinDFA.boundedNerode_eq_nerode}
+  \uses{def:nerode-equiv}
+  
+  The bounded Nerode relation satisfies the following properties:
+  
+  \begin{enumerate}
+    \item \textbf{Monotonicity}: For $n \leq m$, we have $\sim_{\text{Nerode}}^{(m)} \subseteq \sim_{\text{Nerode}}^{(n)}$ 
+          (the relation becomes finer as the bound increases).
+    
+    \item \textbf{Stabilization}: If $\sim_{\text{Nerode}}^{(n)} = \sim_{\text{Nerode}}^{(n+1)}$, then 
+          $\sim_{\text{Nerode}}^{(n)} = \sim_{\text{Nerode}}^{(m)}$ for all $m \geq n$.
+    
+    \item \textbf{Finite stabilization}: The relation stabilizes at or before level $|\sigma|$, i.e., 
+          $\sim_{\text{Nerode}}^{(|\sigma|)} = \sim_{\text{Nerode}}^{(|\sigma|+1)}$.
+    
+    \item \textbf{Equivalence with unbounded relation}: 
+          $\sim_{\text{Nerode}}^{(|\sigma|)} = \sim_{\text{Nerode}}$.
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}[Proof of Stabilization]
+  
+  We use finpartitions to prove stabilization. Each bounded Nerode relation $\sim_{\text{Nerode}}^{(n)}$ 
+  induces a partition of the state space $\sigma$ into equivalence classes.
+  
+  \textbf{Key insight}: If two bounded Nerode relations induce partitions with the same number of parts, 
+  then the relations are equal.
+  
+  \textbf{Monotonicity}: Since longer words provide more distinguishing power, 
+  $\sim_{\text{Nerode}}^{(n+1)} \subseteq \sim_{\text{Nerode}}^{(n)}$.
+  
+  \textbf{Cardinality bound}: Each partition has at most $|\sigma|$ parts since there are only $|\sigma|$ states.
+  
+  \textbf{Pigeonhole argument}: Consider the sequence of partition cardinalities:
+  $$|\text{parts}(\sim_{\text{Nerode}}^{(0)})|, |\text{parts}(\sim_{\text{Nerode}}^{(1)})|, \ldots$$
+  
+  This is a weakly increasing sequence (by monotonicity) bounded above by $|\sigma|$. 
+  Either:
+  \begin{itemize}
+    \item The sequence stabilizes at some level $n < |\sigma|$, or
+    \item At level $|\sigma|$, we have $|\text{parts}(\sim_{\text{Nerode}}^{(|\sigma|)})| = |\sigma|$
+  \end{itemize}
+  
+  In both cases, stabilization occurs by level $|\sigma|$.
+  
+  \textbf{Equivalence with unbounded relation}: Once stabilized, the bounded relation equals 
+  the unbounded Nerode relation since no additional distinguishing power is gained from longer words.
+\end{proof}

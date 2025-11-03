@@ -1,6 +1,6 @@
 import MyProject.Hom
 import MyProject.Nerode
--- import Mathlib
+import Mathlib
 
 /-!
 # The (minimal) Nerode Automaton
@@ -22,13 +22,13 @@ the Nerode automaton of the language defined by `M`.
 * `AccessibleFinDFA.nerodeAutomaton_pres_lang` :
   `M` and `M.nerodeAutomaton` accept the same language.
 
-* `AccessibleFinDFA.NerodeAutomaton_isMinimal` : `M.nerodeAutomaton` is minimal by the
+* `AccessibleFinDFA.nerodeAutomaton_isMinimal` : `M.nerodeAutomaton` is minimal by the
 surjective-morphism based preorder on `AccessibleFinDFA`s. In other words, For any other
 `N : AccessableFinDFA` that accepts the same language as
  `M.nerodeAutomaton`, there exists a surjective
 morphism from `N.DFA` to `M.nerodeAutomaton.toDFA`.
 
-* `AccessibleFinDFA.NerodeAutomaton_minimal_states` :
+* `AccessibleFinDFA.nerodeAutomaton_minimal_states` :
  `M.nerodeAutomaton` has the minimal number
 of states among all `AccessibleFinDFA`s that accept the same language.
 
@@ -39,7 +39,7 @@ Prove uniqueness of minimal automaton for all automata accepting the same langua
 ## Blueprint
 
 TODO
-
+-/
 
 namespace AccessibleFinDFA
 
@@ -48,6 +48,7 @@ universe u v
 variable {α : Type u} [Fintype α] [DecidableEq α]
 variable {σ : Type v} [Fintype σ] [DecidableEq σ]
 
+/-- A word indistinguishes two states iff it indistinguishes their transitions under any letter. -/
 lemma nerode_step (M : AccessibleFinDFA α σ) {s₁ s₂ : σ} (h : M.nerode s₁ s₂) (a : α) :
     M.nerode (M.step s₁ a) (M.step s₂ a) := by
   simp_all [nerode, Indist]
@@ -56,7 +57,8 @@ lemma nerode_step (M : AccessibleFinDFA α σ) {s₁ s₂ : σ} (h : M.nerode s�
   simp_all [DFA.evalFrom]
 
 /-- The Nerode automaton of the `AccessibleFinDFA` `M`. -/
-def nerodeAutomaton (M : AccessibleFinDFA α σ) : AccessibleFinDFA α (Quotient (M.nerode)) where
+def nerodeAutomaton (M : AccessibleFinDFA α σ) :
+    AccessibleFinDFA α (Quotient (M.nerode)) where
   step (s' : Quotient (M.nerode)) (a : α) :=
     Quotient.lift
       (fun s : σ ↦ ⟦M.step s a⟧)
@@ -65,7 +67,7 @@ def nerodeAutomaton (M : AccessibleFinDFA α σ) : AccessibleFinDFA α (Quotient
   accept := {⟦q⟧ | q ∈ M.accept }
   is_accessible := by
     have hacc := M.is_accessible
-    simp_all [FinDFA.isAccessibleState]
+    simp_all [FinDFA.IsAccessibleState]
     apply Quotient.ind
     intro s
     specialize hacc s
@@ -75,38 +77,29 @@ def nerodeAutomaton (M : AccessibleFinDFA α σ) : AccessibleFinDFA α (Quotient
     subst hw
     exact List.foldl_hom (Quotient.mk M.nerode) fun x ↦ congrFun rfl
 
+/-- Given a state of an `AccessibleFinDFA`, return the word reaching that state. -/
+def stateToWord (M : AccessibleFinDFA α σ) (s : σ) : List α := by
+  sorry
 
-#check DFA
-
-/- The *left quotient* of `x` is the set of suffixes `y` such that `x ++ y` is in `L`. -/
-#check Language.leftQuotient
-
-/-- Given a state of an `AccessibleFinDFA`, return the word reaching that state-/
-def stateToWord (M : AccessibleFinDFA α σ) (s : σ) : List α := sorry
-
-def stateToWord_correct (M : AccessibleFinDFA α σ) (s : σ) :
-(M : DFA α σ).eval (M.stateToWord s) = s := by sorry
+/-- The `stateToWord` function correctly produces a word that evaluates to the given state. -/
+lemma stateToWord_correct (M : AccessibleFinDFA α σ) (s : σ) :
+    (M : DFA α σ).eval (M.stateToWord s) = s := by
+  sorry
 
 /-- Given a state of an `AccessibleFinDFA`,
-return the corrosponding left quotient of the language -/
+return the corresponding left quotient of the language. -/
 def stateToQuotient (M : AccessibleFinDFA α σ) (s : σ) : Language α :=
   ((M : DFA α σ).accepts).leftQuotient (M.stateToWord s)
 
-/-- Two states are nerode equivilant iff they represent the same left quotient -/
+/-- Two states are nerode equivalent iff they represent the same left quotient. -/
 lemma nerode_iff_leftQuotient (M : AccessibleFinDFA α σ) {s₁ s₂ : σ} : M.nerode s₁ s₂ ↔
     ((M : DFA α σ).accepts).leftQuotient (M.stateToWord s₁) =
     ((M : DFA α σ).accepts).leftQuotient (M.stateToWord s₂) := by
   simp [nerode, Indist]
+  sorry
 
-
-
-/- TODO: Prove that -/
-
-
-/- TODO:  We prove that the transition functin of the nerodeAutomaton is defined by
-a function on the left quotients.-/
-
-lemma nerodeAutomaton_lt (M : AccessibleFinDFA α σ) :
+/-- The Nerode automaton is ≤ the original automaton in the partial order. -/
+lemma nerodeAutomaton_le (M : AccessibleFinDFA α σ) :
     M.nerodeAutomaton ≤ M := by
   apply Nonempty.intro
   exact
@@ -133,18 +126,17 @@ lemma nerodeAutomaton_lt (M : AccessibleFinDFA α σ) :
           exact ih
       surjective := Quotient.mk_surjective }
 
-/-- `M.nerodeAutomaton` accepts the same language as `M` -/
+/-- `M.nerodeAutomaton` accepts the same language as `M`. -/
 theorem nerodeAutomaton_pres_lang (M : AccessibleFinDFA α σ) :
     (M.nerodeAutomaton : DFA α (Quotient (M.nerode))).accepts = (M : DFA α σ).accepts := by
   suffices h : M.nerodeAutomaton ≤ M by
     obtain ⟨h⟩ := h
     symm
-    apply DFA.hom_pres_lang
+    apply DFA.Hom.pres_lang
     exact h.1
-  exact nerodeAutomaton_lt M
+  exact nerodeAutomaton_le M
 
-/-- The nerode automaton is less than all automata that accept the same language.
-(more accurately, it is less than all automata for which )-/
+/-- The nerode automaton is less than all automata that accept the same language. -/
 theorem nerodeAutomaton_isMinimal (M : AccessibleFinDFA α σ) :
     (M.nerodeAutomaton).IsMinimal := by
   intro σ₂ _ _ N hle
@@ -161,9 +153,7 @@ theorem nerodeAutomaton_isMinimal (M : AccessibleFinDFA α σ) :
         apply Fintype.card_le_of_surjective h.toFun h.surjective
       refine Nat.le_antisymm ?_ hle
       by_contra hlt
-
       simp_all
-
       sorry
 
   let hinv := h.toFun.surjInv h.surjective
@@ -209,14 +199,9 @@ theorem nerodeAutomaton_isMinimal (M : AccessibleFinDFA α σ) :
       left_inv := left_inv
       right_inv := right_inv }
 
-
+/-- Alternative definition of minimality. -/
 def IsMinimalAlt (M : AccessibleFinDFA α σ) : Prop :=
   ∀ {σ₂ : Type*} [Fintype σ₂] [DecidableEq σ₂] (N : AccessibleFinDFA α σ₂),
   (N : DFA α σ₂).accepts = (M : DFA α σ).accepts → M.nerodeAutomaton ≤ N
 
-
 end AccessibleFinDFA
-
--/
-
-example : 1 + 1 = 2 := by rfl

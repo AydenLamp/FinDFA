@@ -764,6 +764,14 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Hom.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Hom.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Hom.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Hom.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Nerode.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Nerode.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Nerode.tex
+INPUT /workspaces/FinDFA/blueprint/print/../../LaTeX/Nerode.tex
 INPUT /workspaces/FinDFA/blueprint/print/print.aux
 INPUT /workspaces/FinDFA/blueprint/print/print.out
 INPUT /workspaces/FinDFA/blueprint/print/print.out
