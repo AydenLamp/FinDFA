@@ -28,16 +28,6 @@ This project uses **leanblueprint** for interactive documentation. When you push
 
 Our blueprint currently has **one LaTeX file per Lean file**:
 
-```
-LaTeX/
-├── Chapters.tex          # Main file that includes all other LaTeX files with \input statements
-├── Idempotent.tex        # Corresponds to MyProject/Idempotent.lean
-└── Green/
-    ├── Basic.tex         # Corresponds to MyProject/Green/Basic.lean
-    ├── Defs.tex          # Corresponds to MyProject/Green/Defs.lean
-    └── Finite.tex        # Corresponds to MyProject/Green/Finite.lean
-```
-
 Each `.tex` file should document the mathematical content of its corresponding `.lean` file.
 
 ---
