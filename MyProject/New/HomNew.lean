@@ -1,5 +1,47 @@
-import MyProject.DefsNew
-import Mathlib
+import MyProject.New.Accessible
+
+/-!
+# Morphisms between DFAs
+
+This file defines morphisms between DFAs, which are bundled functions between the state spaces
+that respect the transition function, start state, and accept states of the DFAs.
+
+We then define a partial order on Accessible DFAs where `M ≤ N` iff there exists a surjective
+morphism from `N.toDFA` to `M.toDFA`.
+
+## Main definitions
+
+* `DFA.Hom` - A morphism from the `DFA` `M` to the `DFA` `N`, notated `M →ₗ N`.
+
+* `DFA.Equiv` - An equivalence of `DFA`s, which is a bijective morphism, notated `M ≃ₗ N`.
+
+* `DFA.HomSurj` - A surjective DFA morphism. Notated `M ↠ N`.
+
+* `DFA.AccessibleLE` - Notated `≤`, the partial order on Accessible DFAs.
+
+* `DFA.AccessibleIsMinimal` - A predicate that `M` is minimal by the partial order, up to
+  equivalence of `DFA`s.
+
+## Main theorems
+
+* `DFA.Hom.pres_lang` - `M.accepts = N.accepts` when there exists `f : M →ₗ N`.
+
+* `DFA.accessibleLE_refl` - Reflexivity of `≤`.
+
+* `DFA.accessibleLE_trans` - Transitivity of `≤`.
+
+* `DFA.accessibleLE_antisymm` - Antisymmetry of `≤` up to equivalence of underlying DFAs.
+
+## Notation
+
+* `M →ₗ N` - Notation for `DFA.Hom M N`.
+
+* `M ≃ₗ N` - Notation for `DFA.Equiv M N`.
+
+* `M ↠ N` - Notation for `DFA.HomSurj M N`.
+
+* `M ≤ N` - Notation for the partial order on Accessible DFAs.
+-/
 
 namespace DFA
 
@@ -38,7 +80,7 @@ theorem Hom.pres_lang (f : M →ₗ N) : M.accepts = N.accepts := by
     exact h
 
 /-- The identity morphism on a DFA. -/
-def Hom.refl (M : DFA α σ₁) : M →ₗ M where
+def homRefl (M : DFA α σ₁) : M →ₗ M where
   toFun := id
   map_start := by rfl
   map_accept := by intro q; simp
@@ -59,20 +101,21 @@ structure Equiv (M : DFA α σ₁) (N : DFA α σ₂) where
 infixr:25 " ≃ₗ " => Equiv
 
 /-- The identity equivalence on a DFA. -/
-def Equiv.refl (M : DFA α σ₁) : M ≃ₗ M where
-  toDFAHom := Hom.refl M
-  toInvDFAHom := Hom.refl M
+def equivRefl (M : DFA α σ₁) : M ≃ₗ M where
+  toDFAHom := M.homRefl
+  toInvDFAHom := M.homRefl
   left_inv := by tauto
   right_inv := by tauto
 
 /-! ### Surjective Morphisms of AccessibleFinDFAs -/
 
+/-- A structure extending `DFA.Hom` asserting that the morphism is surjective -/
 structure HomSurj (M : DFA α σ₁) [Accessible M] (N : DFA α σ₂) [Accessible N]
     extends f : M →ₗ (N : DFA α σ₂) where
   /-- The function is surjective. -/
   surjective : Function.Surjective f.toFun
 
-/-- `M ↠ N` denotes the type of `AccessibleFinDFA.HomSurj M N`. -/
+/-- `M ↠ N` denotes the type of `DFA.HomSurj M N`. -/
 infixr:25 " ↠ " => HomSurj
 
 variable {M : DFA α σ₁} [Accessible M] {N : DFA α σ₂} [Accessible N]
@@ -87,25 +130,25 @@ in
 /-! ### Partial Order on Accessible DFAs -/
 
 /-- `M ≤ N` iff there is a surjective morphism `N ↠ M`. -/
-def le (M : DFA α σ₁) [Accessible M] (N : DFA α σ₂) [Accessible N] : Prop :=
+def AccessibleLE (M : DFA α σ₁) [Accessible M] (N : DFA α σ₂) [Accessible N] : Prop :=
   Nonempty (N ↠ M)
 
-/-- `M ≤ N` denotes the proposition `le M N`. -/
-infix:25 " ≤ " => le
+/-- `M ≤ N` denotes the proposition `M.AccessibleLE M N`. -/
+infix:25 " ≤ " => AccessibleLE
 
-/-- Reflexivity of the preorder on `AccessibleFinDFA`s. -/
-lemma le_refl (M : DFA α σ₁) [Accessible M] : M ≤ M := by
-  simp [le]
+/-- Reflexivity of the preorder on accessible DFAs. -/
+lemma accessibleLE_refl (M : DFA α σ₁) [Accessible M] : M ≤ M := by
+  simp [AccessibleLE]
   refine ⟨?f⟩
-  refine HomSurj.mk (Hom.refl M) ?_
+  refine HomSurj.mk (M.homRefl) ?_
   intro s
   exact ⟨s, rfl⟩
 
 variable {M : DFA α σ₁} [Accessible M] {N : DFA α σ₂} [Accessible N]
   {σ₃ : Type*} {O : DFA α σ₃} [Accessible O]
 in
-/-- Transitivity of the preorder on `AccessibleFinDFA`s. -/
-lemma le_trans (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
+/-- Transitivity of the preorder on accessible DFAs. -/
+lemma accessibleLE_trans (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
   obtain f := h₁.some
   obtain g := h₂.some
   refine ⟨?_⟩
@@ -137,8 +180,8 @@ lemma le_trans (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
 
 variable {M : DFA α σ₁} [Accessible M] {N : DFA α σ₂} [Accessible N]
 in
-/-- Antisymmetry of the preorder up to equivalence of the underlying DFAs. -/
-lemma le_antisymm (h₁ : M ≤ N) (h₂ : N ≤ M) : Nonempty (M ≃ₗ N) := by
+/-- Antisymmetry of the preorder up to equivalence of DFAs. -/
+lemma accessibleLE_antisymm (h₁ : M ≤ N) (h₂ : N ≤ M) : Nonempty (M ≃ₗ N) := by
   obtain f := h₁.some
   obtain g := h₂.some
   refine ⟨?_⟩
@@ -171,8 +214,8 @@ lemma le_antisymm (h₁ : M ≤ N) (h₂ : N ≤ M) : Nonempty (M ≃ₗ N) := b
       subst hs
       simp_all [eval])
 
-/-- An `AccessibleFinDFA` is minimal if every smaller DFA is equivalent to it. -/
-def IsMinimal (M : DFA α σ₁) [Accessible M] : Prop :=
+/-- An accessible DFA is minimal if every smaller accessible DFA is equivalent to it. -/
+def AccessibleIsMinimal (M : DFA α σ₁) [Accessible M] : Prop :=
   ∀ {σ₂ : Type*} [Fintype σ₂] [DecidableEq σ₂] (N : DFA α σ₂) [Accessible N] (_ : N ≤ M),
     Nonempty (M ≃ₗ N)
 

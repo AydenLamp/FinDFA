@@ -1,5 +1,68 @@
-import MyProject.DefsNew
-import Mathlib
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Order.Partition.Finpartition
+import Mathlib.RingTheory.TwoSidedIdeal.Basic
+import MyProject.New.Fin
+import MyProject.New.List
+
+/-!
+# Nerode Equivalence on AccessibleFinDFAs
+
+This file defines the Nerode equivalence relation on the states of a DFA.
+Two states `s₁, s₂` are Nerode equivalent if the set of words `w` such that `M.evalFrom s₁ w`
+is an accepting state is equal to the set words such that `M.evalFrom s₂ w` is accepting.
+
+We also establish the decidability of the nerode equivalence, given an instance `Fin M` and
+Fintype and DecidableEq instances on the state-space and alphabet. A priori, this would
+require checking infinitely many words. However, we define a computable version `DFA.BoundedNeroe n`
+which only checks that `M.evalFrom s₁ w ∈ M.acceptFin ↔ M.evalFrom s₁ w ∈ M.acceptFin` for words
+`w` such that `w.length ≤ n`. We then prove that `DFA.BoundedNerode |σ| = DFA.Nerode` and
+transfer the decidability instance.
+
+In order to prove the equivalence `DFA.BoundedNerode |σ| = DFA.Nerode`, we establish that
+`DFA.BoundedNerode` is monotone decreasing in `n`, and that it eventually stabilizes at some `n`
+(that is, there is some `n` such that, for all `m ≥ n`, `BoundedNerode n = BoundedNerode m`).
+We prove that the stabilized bounded nerode equivalene is equal to the nerode equivalence, and
+we use an argument on the finpartitions of the state space induced by BoundedNerode to establish
+that it must stabilize at or before `n = |σ|`.
+
+## Main Definitions
+
+* `DFA.Nerode` - The equivalence relation (as a `Setoid`) on states of a `DFA` asserting
+that `M.acceptsFrom s₁ = M.acceptsFrom s₂`
+
+* `DFA.Indist w s₁ s₂` - A predicate stating that
+`M.evalFrom s₁ w ∈ M.acceptFin ↔ M.evalFrom s₂ w ∈ acceptFin`
+
+* `DFA.BoundedNerode (n : ℕ)` - The equivalence relation (as a `Setoid`) on states of a
+`DFA` asserting that `M.evalFrom s₁ w ∈ M.accept ↔ M.evalFrom s₂ w ∈ M.accept` for all
+words of length less than `n`.
+
+* `DFA.boundedNerodeFinpartition (n : ℕ)` - The finpartition of the state-space
+induced by `BoundedNerode n`
+
+* `DFA.nerode_decidable` - Decidability instance for `M.Nerode`, given `Fin M` and
+Fintype and DecidableEq instances on the state-space and alphabet of `M`.
+
+## Main Theorems
+
+* `DFA.boundedNerode_mono` - The bounded nerode relation is monotone decreasing in `n`.
+That is, `M.BoundedNerode m` is finer than `M.BoundedNerode n` for `n ≤ m`
+
+* `DFA.boundedNerode_stable` - If `BoundedNerode n = BoundedNerode (n + 1)`, then
+`BoundedNerode n = BoundedNerode m` for all `m ≥ n`
+
+* `DFA.boundedNerodeFinpartition_parts_eq_of_card_eq` - If `BoundedNerodeFinpartition n` has the
+same number of partitions as `BoundedNerodeFinpartition m`, then the partitions are the same.
+
+* `DFA.boundedNerodeFinpartition_stabilized` - `BoundedNerodeFinpartition |σ|` is the same
+partition as `BoundedNerodeFinpartition n` for all `n ≥ |σ|`.
+
+## TODO
+
+Should the bounded nerode definitions be made private? It is only needed to get a decidability
+instance on `nerode`.
+
+-/
 
 namespace DFA
 
@@ -7,10 +70,18 @@ universe u v
 
 variable {α : Type u} {σ : Type v} (M : DFA α σ)
 
+def Nerode : Setoid σ where
+  r (s₁ s₂ : σ) : Prop := M.acceptsFrom s₁ = M.acceptsFrom s₂
+  iseqv :=  {
+    refl (s : σ) := rfl
+    symm {s₁ s₂ : σ} hs := hs.symm
+    trans {s₁ s₂ s₃ : σ} h₁ h₂ := by rw [h₁, h₂]
+  }
+
 /-- A word indistinguishes two states if evaluating from them leads to the same acceptance
 outcomes. -/
 def Indist (w : List α) (s₁ s₂ : σ) : Prop :=
-  ((M : DFA α σ).evalFrom s₁ w ∈ M.accept) ↔ ((M : DFA α σ).evalFrom s₂ w ∈ M.accept)
+  (M.evalFrom s₁ w ∈ M.accept) ↔ (M.evalFrom s₂ w ∈ M.accept)
 
 /-- `a :: w` indistinguishes `s₁` from `s₂` iff `w` indistinguishes
 `M.step s₁ a` from `M.step s₂ a`. -/
@@ -18,20 +89,9 @@ lemma indist_cons (w : List α) (a : α) (s₁ s₂ : σ) :
     M.Indist (a :: w) s₁ s₂ ↔ M.Indist w (M.step s₁ a) (M.step s₂ a) := by
   simp_all [Indist, DFA.evalFrom]
 
-/-- The Nerode equivalence: two states are equivalent if they are indistinguishable by all
-words. -/
-def nerode : Setoid σ where
-  r (s₁ s₂ : σ) : Prop := ∀ w : List α, M.Indist w s₁ s₂
-  iseqv := {
-    refl := fun s w => by simp [Indist]
-    symm := fun h w => by simp [Indist] at *; exact h w |>.symm
-    trans := fun h₁ h₂ w => by
-      simp [Indist] at *
-      rw [h₁ w, h₂ w] }
-
 /-- The bounded Nerode equivalence at level `n`: two states are equivalent if they are
 indistinguishable by words of length ≤ `n`. -/
-def boundedNerode (n : ℕ) : Setoid σ where
+def BoundedNerode (n : ℕ) : Setoid σ where
   r (s₁ s₂ : σ) : Prop := ∀ w : List α, w.length ≤ n → M.Indist w s₁ s₂
   iseqv := {
     refl := fun s w h => by simp [Indist]
@@ -40,13 +100,26 @@ def boundedNerode (n : ℕ) : Setoid σ where
       simp [Indist] at *
       rw [h₁ w hw, h₂ w hw] }
 
+/-- Two states are nerode equivalent iff they are
+bounded nerode equivalent for all `n` -/
+lemma boundedNerode_forall_eq_nerode (s₁ s₂ : σ) :
+    (∀ n, M.BoundedNerode n s₁ s₂) ↔ M.Nerode s₁ s₂ := by
+  simp_all [Nerode, BoundedNerode, Indist, acceptsFrom, Language.ext_iff]
+  conv => rhs; intro; rw [Set.mem_setOf]; rw [Set.mem_setOf]
+  constructor
+  · rintro h w
+    apply (h w.length)
+    simp
+  · rintro h n w hw
+    apply h
+
 /-!
 ### Decidability of boundedNerode
 
-We define a computable version of `boundedNerode` that quantifies over our finset
+We define a computable version of `BoundedNerode` that quantifies over our finset
 `M.getWordsLeqLength n`. Because this is a finite set, this version is decidable.
 We then prove that this computable version is equivalent to the original one, and
-thus we can transfer the decidability instance to `boundedNerode`.
+thus we can transfer the decidability instance to `BoundedNerode`.
 -/
 
 section Decidability
@@ -54,12 +127,12 @@ section Decidability
 variable [Fintype α] [DecidableEq α]
 
 /-- Computable version of bounded Nerode that quantifies over a `Finset` of words. -/
-def boundedNerodeComputable (n : ℕ) (s₁ s₂ : σ) : Prop :=
+def BoundedNerodeComputable (n : ℕ) (s₁ s₂ : σ) : Prop :=
   ∀ w ∈ List.getWordsLeqLength n, M.Indist w s₁ s₂
 
 /-- The computable version is equivalent to the original bounded Nerode relation. -/
 lemma boundedNerodeComputable_correct (n : ℕ) (s₁ s₂ : σ) :
-    M.boundedNerodeComputable n s₁ s₂ ↔ M.boundedNerode n s₁ s₂ := by
+    M.BoundedNerodeComputable n s₁ s₂ ↔ M.BoundedNerode n s₁ s₂ := by
   constructor
   · intro h w hw
     apply h
@@ -73,16 +146,16 @@ lemma boundedNerodeComputable_correct (n : ℕ) (s₁ s₂ : σ) :
 variable [Fintype σ] [DecidableEq σ] [Fin M]
 
 instance boundedNerodeComputable_decidable (n : ℕ) :
-    DecidableRel (M.boundedNerodeComputable n) := by
-  unfold boundedNerodeComputable Indist
+    DecidableRel (M.BoundedNerodeComputable n) := by
+  unfold BoundedNerodeComputable Indist
   simp
   infer_instance
 
 /-- Decidability instance for bounded Nerode. -/
-instance boundedNerode_decidable (n : ℕ) : DecidableRel (M.boundedNerode n) := by
+instance boundedNerode_decidable (n : ℕ) : DecidableRel (M.BoundedNerode n) := by
   intros s₁ s₂
   apply decidable_of_iff
-    (M.boundedNerodeComputable n s₁ s₂)
+    (M.BoundedNerodeComputable n s₁ s₂)
     (M.boundedNerodeComputable_correct n s₁ s₂)
 
 end Decidability
@@ -90,42 +163,30 @@ end Decidability
 /-!
 ### BoundedNerode Monotonicity and Stabilization
 
-We say that `boundedNerode` is stable at level `n` if `boundedNerode n = boundedNerode (n + 1)`.
-We prove that, if `boundedNerode n` is stable, then `boundedNerode n = boundedNerode m`
-for all `m ≥ n` and thus `boundedNerode n = nerode`.
+We say that `BoundedNerode` is stable at level `n` if `BoundedNerode n = BoundedNerode (n + 1)`.
+We prove that, if `BoundedNerode n` is stable, then `BoundedNerode n = BoundedNerode m`
+for all `m ≥ n` and thus `BoundedNerode n = Nerode`.
 -/
-
-lemma boundedNerode_mono_succ (n : ℕ) :
-    M.boundedNerode (n + 1) ≤ M.boundedNerode n := by
-  simp_all [Setoid.le_def]
-  intros s₁ s₂ h w hw
-  apply h; linarith
 
 /-- Monotonicity of bounded Nerode. -/
 theorem boundedNerode_mono {n m : ℕ} (hle : n ≤ m) :
-    M.boundedNerode m ≤ M.boundedNerode n := by
-  simp [Setoid.le_def]
-  induction hd : (m - n) generalizing m n with
-  | zero =>
-    have heq : m = n := by omega
-    simp_all
-  | succ o ih =>
-    have hm : (m - 1) - n = o := by omega
-    have hle' : n ≤ m - 1 := by omega
-    intros s₁ s₂ hn
-    have h : M.boundedNerode (m - 1) s₁ s₂ := by
-      apply boundedNerode_mono_succ
-      have hm' : m - 1 + 1 = m := by omega
-      rw [hm']
-      exact hn
-    exact @ih n (m - 1) hle' hm s₁ s₂ h
+    M.BoundedNerode m ≤ M.BoundedNerode n := by
+  simp [Setoid.le_def, BoundedNerode]
+  intros s₁ s₂ h₁ w h₂
+  apply h₁
+  omega
 
-/-- If `boundedNerode n` is not equal to `boundedNerode (n+1)`, then there exist states `s₁, s₂`
+theorem boundedNerode_of_ge {n m : ℕ} {s₁ s₂} (h : M.BoundedNerode n s₁ s₂) (hle : m ≤ n) :
+    M.BoundedNerode m s₁ s₂ := by
+  have hmono := M.boundedNerode_mono hle
+  exact hmono h
+
+/-- If `BoundedNerode n` is not equal to `BoundedNerode (n+1)`, then there exist states `s₁, s₂`
 which are indistinguishable by words of length ≤ `n` but distinguished by some word of
 length `n + 1`. -/
 lemma boundedNerode_neq_implies_distinguishes {n : ℕ}
-  (hneq : M.boundedNerode n ≠ M.boundedNerode (n + 1)) :
-    ∃ (s₁ s₂ : σ), M.boundedNerode n s₁ s₂ ∧
+  (hneq : M.BoundedNerode n ≠ M.BoundedNerode (n + 1)) :
+    ∃ (s₁ s₂ : σ), M.BoundedNerode n s₁ s₂ ∧
       ∃ (w : List α), (w.length = n + 1) ∧ ¬ (M.Indist w s₁ s₂) := by
   by_contra hexists
   apply hneq
@@ -133,20 +194,20 @@ lemma boundedNerode_neq_implies_distinguishes {n : ℕ}
   · intros h
     simp_all
     have h₂ := hexists s₁ s₂ h
-    simp_all only [boundedNerode]
+    simp_all only [BoundedNerode]
     intros w hw
     have hw : w.length = n + 1 ∨ w.length ≤ n := by omega
     rcases hw with (hw | hw)
     · apply h₂; exact hw
     · apply h; exact hw
   · intros h
-    apply boundedNerode_mono_succ
-    exact h
+    apply M.boundedNerode_of_ge h
+    simp
 
 /-- If bounded Nerode stabilizes, then so does `boundedNerode (n+1)`. -/
 lemma boundedNerode_stable_succ (n : ℕ)
-  (heq : M.boundedNerode n = M.boundedNerode (n + 1)) :
-    M.boundedNerode (n + 1) = M.boundedNerode (n + 2) := by
+  (heq : M.BoundedNerode n = M.BoundedNerode (n + 1)) :
+    M.BoundedNerode (n + 1) = M.BoundedNerode (n + 2) := by
   by_contra hneq
   obtain ⟨s₁, s₂, hind, w, wlen, hdist⟩ := M.boundedNerode_neq_implies_distinguishes hneq
   have hwPos : w ≠ [] := by aesop
@@ -154,28 +215,28 @@ lemma boundedNerode_stable_succ (n : ℕ)
   rw [hw] at hdist
   have hw₁ : w.tail.length = n + 1 := by simp; omega
   rw [indist_cons] at hdist
-  have hdist' : ¬ M.boundedNerode (n + 1) (M.step s₁ (w.head hwPos))
+  have hdist' : ¬ M.BoundedNerode (n + 1) (M.step s₁ (w.head hwPos))
       (M.step s₂ (w.head hwPos)) := by
-    simp [boundedNerode]
+    simp [BoundedNerode]
     use w.tail; constructor
     · omega
     · exact hdist
-  have hdist'' : ¬ M.boundedNerode n (M.step s₁ (w.head hwPos))
+  have hdist'' : ¬ M.BoundedNerode n (M.step s₁ (w.head hwPos))
       (M.step s₂ (w.head hwPos)) := by
     rw [heq]; exact hdist'
-  simp [boundedNerode] at hdist''
+  simp [BoundedNerode] at hdist''
   obtain ⟨t, htlen, htdist⟩ := hdist''
   rw [← indist_cons] at htdist
-  have hdist''' : ¬ M.boundedNerode (n + 1) s₁ s₂ := by
-    simp [boundedNerode]
+  have hdist''' : ¬ M.BoundedNerode (n + 1) s₁ s₂ := by
+    simp [BoundedNerode]
     use (w.head hwPos :: t); constructor
     · simp [htlen]
     · exact htdist
   contradiction
 
 /-- If bounded Nerode stabilizes at level `n`, it remains stable for all higher levels. -/
-lemma boundedNerode_stable {n : ℕ} (heq : M.boundedNerode n = M.boundedNerode (n + 1)) :
-    ∀ m ≥ n, M.boundedNerode n = M.boundedNerode m := by
+lemma boundedNerode_stable {n : ℕ} (heq : M.BoundedNerode n = M.BoundedNerode (n + 1)) :
+    ∀ m ≥ n, M.BoundedNerode n = M.BoundedNerode m := by
   intros m hle
   induction hd : (m - n) generalizing m n heq with
   | zero =>
@@ -187,18 +248,14 @@ lemma boundedNerode_stable {n : ℕ} (heq : M.boundedNerode n = M.boundedNerode 
     have ih := @ih (n + 1) heq' m (by omega) hm
     rwa [← ih]
 
-lemma boundedNerode_forall_eq_nerode (s₁ s₂ : σ) :
-    M.nerode s₁ s₂ ↔ ∀ n, M.boundedNerode n s₁ s₂ := by
-  simp_all [nerode, boundedNerode]
-  aesop
 
 /-- If bounded Nerode stabilizes at `n`, then it equals the Nerode equivalence. -/
 lemma boundedNerode_stable_eq_nerode {n : ℕ}
-  (heq : M.boundedNerode n = M.boundedNerode (n + 1)) :
-    M.boundedNerode n = M.nerode := by
+  (heq : M.BoundedNerode n = M.BoundedNerode (n + 1)) :
+    M.BoundedNerode n = M.Nerode := by
   have h := M.boundedNerode_stable heq
   ext s₁ s₂
-  rw [boundedNerode_forall_eq_nerode]
+  rw [← M.boundedNerode_forall_eq_nerode]
   constructor
   · intro h' m
     have h' : m ≥ n ∨ m < n := by omega
@@ -213,8 +270,8 @@ lemma boundedNerode_stable_eq_nerode {n : ℕ}
 /-!
 ### BoundedNerode Finpartitions
 
-In this section, we define the `Finpartition` on the state space induced by `boundedNerode n`,
-where each part corresponds to an equivalence class of `boundedNerode n`.
+In this section, we define the `Finpartition` on the state space induced by `BoundedNerode n`,
+where each part corresponds to an equivalence class of `BoundedNerode n`.
 
 We prove that if two bounded Nerode finpartitions have the same cardinality, they have the same
 parts and thus induce the same equivalence relation. We then show that the finpartition induced
@@ -227,11 +284,11 @@ variable [σFin : Fintype σ] [DecidableEq σ] [Fintype α] [DecidableEq α] [Fi
 
 /-- The finpartition of the state space induced by bounded Nerode at level `n`. -/
 def boundedNerodeFinpartition (n : ℕ) : Finpartition (@Finset.univ σ σFin) :=
-  Finpartition.ofSetoid (M.boundedNerode n)
+  Finpartition.ofSetoid (M.BoundedNerode n)
 
 /-- Membership in a partition part is equivalent to bounded Nerode equivalence. -/
 @[simp] lemma boundedNerodeFinpartition_mem (n : ℕ) (s₁ s₂ : σ) :
-    s₂ ∈ (M.boundedNerodeFinpartition n).part s₁ ↔ M.boundedNerode n s₁ s₂ := by
+    s₂ ∈ (M.boundedNerodeFinpartition n).part s₁ ↔ M.BoundedNerode n s₁ s₂ := by
   simp [boundedNerodeFinpartition, Finpartition.mem_part_ofSetoid_iff_rel]
 
 lemma boundedNerodeFinpartition_mono {n m : ℕ} (hle : n ≤ m) :
@@ -247,7 +304,7 @@ lemma boundedNerodeFinpartition_mono {n m : ℕ} (hle : n ≤ m) :
   simp
   intros s₂ hs₂
   rw [boundedNerodeFinpartition_mem]
-  have ht' : M.boundedNerode m s s₂ := by
+  have ht' : M.BoundedNerode m s s₂ := by
     rwa [← ht', boundedNerodeFinpartition_mem] at hs₂
   have hmono := M.boundedNerode_mono hle
   simp [Setoid.le_def] at hmono
@@ -376,8 +433,8 @@ lemma boundedNerodeFinpartition_parts_eq_of_card_eq {n m : ℕ}
 /-- If two finpartitions have the same cardinality, they induce the same underlying relation. -/
 lemma boundedNerodeFinpartition_eq_of_card_eq {n m : ℕ}
   (hcard : (M.boundedNerodeFinpartition n).parts.card =
-    (M.boundedNerodeFinpartition m).parts.card) :
-    M.boundedNerode n = M.boundedNerode m := by
+           (M.boundedNerodeFinpartition m).parts.card) :
+    M.BoundedNerode n = M.BoundedNerode m := by
   have hparts := boundedNerodeFinpartition_parts_eq_of_card_eq M hcard
   have hpartition : (M.boundedNerodeFinpartition n) = (M.boundedNerodeFinpartition m):= by
     ext s; rw [hparts]
@@ -405,7 +462,7 @@ lemma boundedNerodeFinpartition_stabilized_or_card_ge (n : ℕ) :
     rcases ih with (h | h)
     · left
       have heq := boundedNerodeFinpartition_eq_of_card_eq M h
-      have heq' : M.boundedNerode (o + 1) = M.boundedNerode (o + 2) := by
+      have heq' : M.BoundedNerode (o + 1) = M.BoundedNerode (o + 2) := by
         apply boundedNerode_stable_succ M o heq
       simp_all [boundedNerodeFinpartition]
     · have hcard : (M.boundedNerodeFinpartition o).parts.card ≤
@@ -416,7 +473,7 @@ lemma boundedNerodeFinpartition_stabilized_or_card_ge (n : ℕ) :
       rcases hcard with (hlt | heq)
       · right; omega
       · left
-        have heq' : M.boundedNerode (o + 1) = M.boundedNerode (o + 2) := by
+        have heq' : M.BoundedNerode (o + 1) = M.BoundedNerode (o + 2) := by
           refine boundedNerode_stable_succ M o ?_
           apply boundedNerodeFinpartition_eq_of_card_eq M heq
         simp [boundedNerodeFinpartition, heq']
@@ -439,7 +496,7 @@ lemma boundedNerodeFinpartition_stabilized :
 
 /-- The bounded Nerode relation at level `|σ|` equals the unbounded Nerode relation. -/
 theorem boundedNerode_iff_nerode (s₁ s₂ : σ) :
-    M.boundedNerode (Fintype.card σ) s₁ s₂ ↔ M.nerode s₁ s₂ := by
+    M.BoundedNerode (Fintype.card σ) s₁ s₂ ↔ M.Nerode s₁ s₂ := by
   have hstabilized := boundedNerodeFinpartition_stabilized M
   have heq := boundedNerodeFinpartition_eq_of_card_eq M hstabilized
   have heq' := by apply boundedNerode_stable_eq_nerode M heq
@@ -447,27 +504,22 @@ theorem boundedNerode_iff_nerode (s₁ s₂ : σ) :
 
 /-! ### Decidability of Nerode Equivalence -/
 
-/-- Decidability instance for testing if two states of an `AccessibleFinDFA` are
+/-- Decidability instance for testing if two states of a Fin DFA are
 Nerode equivalent. -/
-instance nerode_decidable : DecidableRel (M.nerode) := by
+instance nerode_decidable : DecidableRel (M.Nerode) := by
   intros s₁ s₂
   apply decidable_of_decidable_of_iff (M.boundedNerode_iff_nerode s₁ s₂)
 
 /-- A `Fintype` instance on the quotient of states by Nerode equivalence. -/
-instance nerode_quotient_fintype : Fintype (Quotient (M.nerode)) := by
-  apply @Quotient.fintype σ σFin (M.nerode) (nerode_decidable M)
+instance nerode_quotient_fintype : Fintype (Quotient (M.Nerode)) := by
+  apply @Quotient.fintype σ σFin (M.Nerode) (nerode_decidable M)
 
 /-- A `DecidableEq` instance on the quotient of states by Nerode equivalence. -/
-instance nerode_quotient_decidableEq : DecidableEq (Quotient (M.nerode)) := by
-  apply @Quotient.decidableEq σ (M.nerode) (nerode_decidable M)
+instance nerode_quotient_decidableEq : DecidableEq (Quotient (M.Nerode)) := by
+  apply @Quotient.decidableEq σ (M.Nerode) (nerode_decidable M)
 
 end Finpartitions
 
-/-! ### Left Quotient Charactarization of Nerode -/
-
-theorem nerode_iff_leftQuotient (s₁ s₂ : σ) :
-    M.nerode s₁ s₂ ↔ M.acceptsFrom s₁ = M.acceptsFrom s₂ := by
-  simp [nerode, Indist, acceptsFrom]
-  exact Iff.symm Language.ext_iff
-
 end DFA
+
+#min_imports

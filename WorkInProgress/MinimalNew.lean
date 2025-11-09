@@ -1,51 +1,132 @@
-import MyProject.NerodeNew
-import MyProject.HomNew
+import MyProject.New.NerodeNew
+import MyProject.New.HomNew
 import Mathlib
 
 namespace DFA
 
 universe u v
 
-variable {α : Type u} {σ : Type v}
+variable {α : Type u} {σ : Type v} (M : DFA α σ)
 
 section Finite
 
-/-- A word indistinguishes two states iff it indistinguishes their transitions under any letter. -/
-lemma nerode_step (M : DFA α σ) {s₁ s₂ : σ} (h : M.nerode s₁ s₂) (a : α) :
-    M.nerode (M.step s₁ a) (M.step s₂ a) := by
-  simp_all [nerode, Indist]
-  intros w
-  specialize h (a :: w)
-  simp_all [DFA.evalFrom]
+/-- The language of words `w` such that `M.evalFrom (M.step s a) w ∈ M.accept`
+is equal to the left quotient of `M.acceptsFrom s` by `[a]` -/
+lemma acceptsFrom_step (s : σ) (a : α) :
+    M.acceptsFrom (M.step s a) = (M.acceptsFrom s).leftQuotient [a] := by
+  ext w
+  have heq : ∀ w, a :: w = [a] ++ w := fun w ↦ rfl
+  simp [Language.leftQuotient, mem_acceptsFrom]
+  conv=> rhs; lhs; rhs; ext y; rw [(heq y)]
+  simp only [evalFrom_of_append, evalFrom_singleton]
+  rfl
 
-variable [Fintype α] [DecidableEq α] [Fintype σ] [DecidableEq σ]
+/-- If s₁, s₂ are Nerode Equivilant, then so are
+`M.step s₁ a` and `M.step s₂ a` for all `a : α` -/
+lemma nerode_step {s₁ s₂ : σ} (h : M.Nerode s₁ s₂) (a : α) :
+    M.Nerode (M.step s₁ a) (M.step s₂ a) := by
+  simp_all [Nerode, acceptsFrom_step]
 
-def nerodeAutomaton (M : DFA α σ) :
-    DFA α (Quotient (M.nerode)) where
-  step (s' : Quotient (M.nerode)) (a : α) :=
+/-- For a DFA `M`, `M.toNerodeDFA` is a DFA whose state-space is the
+quotient of `M`'s by the nerode Equivalence. -/
+def toNerodeDFA :
+    DFA α (Quotient (M.Nerode)) where
+  step (s' : Quotient (M.Nerode)) (a : α) :=
     Quotient.lift
       (fun s : σ ↦ ⟦M.step s a⟧)
       (by intros s₁ s₂ h; simp; apply nerode_step; apply h) s'
   start := ⟦M.start⟧
   accept := {⟦q⟧ | q ∈ M.accept }
 
-@[simp] lemma nerodeAutomaton_start_def (M : DFA α σ) :
-    M.nerodeAutomaton.start = ⟦M.start⟧ := rfl
+@[simp] lemma toNerodeDFA_start_def :
+    M.toNerodeDFA.start = ⟦M.start⟧ := rfl
 
-@[simp] lemma nerodeAutomaton_accept_def (M : DFA α σ) :
-    M.nerodeAutomaton.accept = {⟦q⟧ | q ∈ M.accept } := rfl
+@[simp] lemma toNerodeDFA_accept_def :
+    M.toNerodeDFA.accept = {⟦q⟧ | q ∈ M.accept } := rfl
 
-@[simp] lemma nerodeAutomaton_step_def (M : DFA α σ) (s : σ) (a : α) :
-    M.nerodeAutomaton.step ⟦s⟧ a = ⟦M.step s a⟧ := rfl
+@[simp] lemma toNerodeDFA_step_def (s : σ) (a : α) :
+    M.toNerodeDFA.step ⟦s⟧ a = ⟦M.step s a⟧ := rfl
 
-@[simp] lemma nerodeAutomaton_evalFrom_def (M : DFA α σ) (s : σ) (w : List α) :
-    M.nerodeAutomaton.evalFrom ⟦s⟧ w = ⟦M.evalFrom s w⟧ := by
+@[simp] lemma toNerodeDFA_evalFrom_def (s : σ) (w : List α) :
+    M.toNerodeDFA.evalFrom ⟦s⟧ w = ⟦M.evalFrom s w⟧ := by
   simp [evalFrom]
-  exact List.foldl_hom (init := s) (l := w) (Quotient.mk M.nerode)
-    (fun (s₁ : σ) (a : α) ↦ M.nerodeAutomaton_step_def s₁ a)
+  exact List.foldl_hom (init := s) (l := w) (Quotient.mk M.Nerode)
+    (fun (s₁ : σ) (a : α) ↦ M.toNerodeDFA_step_def s₁ a)
 
-@[simp] lemma nerodeAutomaton_eval_def (M : DFA α σ) (w : List α) :
-    M.nerodeAutomaton.eval w = ⟦M.eval w⟧ := by simp [DFA.eval]
+@[simp] lemma toNerodeDFA_eval_def (w : List α) :
+    M.toNerodeDFA.eval w = ⟦M.eval w⟧ := by simp [DFA.eval]
+
+/-- If s₁ and s₂ are Nerode equivalent, then s₁ is an accepting state
+iff s₂ is an accepting state. -/
+lemma nerode_pres_mem_accept {s₁ s₂ : σ} (hn : M.Nerode s₁ s₂) :
+    s₁ ∈ M.accept ↔ s₂ ∈ M.accept := by
+  simp_all [Nerode, acceptsFrom]
+  constructor
+  · intros hs₁
+    have hin : [] ∈ {x | M.evalFrom s₁ x ∈ M.accept} := by
+      simp [hs₁]
+    rw [hn] at hin
+    simpa
+  · intros hs₂
+    have hin : [] ∈ {x | M.evalFrom s₂ x ∈ M.accept} := by
+      simp [hs₂]
+    rw [← hn] at hin
+    simpa
+
+@[simp] lemma toNerodeDFA_acceptsFrom_def (s : σ) :
+    M.toNerodeDFA.acceptsFrom ⟦s⟧ = M.acceptsFrom s := by
+  simp [acceptsFrom]
+  ext w
+  rw [Set.mem_setOf]
+  rw [Set.mem_setOf]
+  constructor
+  · rintro ⟨s₂, ⟨hs₁, hs₂⟩⟩
+    rwa [M.nerode_pres_mem_accept hs₂.symm]
+  · intro hw
+    use M.evalFrom s w
+
+/-- The language accepted by `M.toNerodeDFA` is the same as that of `M`. -/
+@[simp] theorem toNerodeDFA_pres_accepts : M.toNerodeDFA.accepts = M.accepts := by
+  simp [accepts]
+
+/-- Two states are nerode equivalent iff the words accessing them induce
+the same left quotient on `M.accepts`. -/
+lemma nerode_iff_leftQuotient_eq {s₁ s₂ : σ} {w₁ w₂ : List α}
+  (hs₁ : M.eval w₁ = s₁) (hs₂ : M.eval w₂ = s₂) :
+    M.Nerode s₁ s₂ ↔ M.accepts.leftQuotient w₁ = M.accepts.leftQuotient w₂ := by
+  simp [Nerode, Language.leftQuotient_accepts_apply, ← hs₁, ← hs₂]
+
+def toNerodeDFA_eq_accepts_toDFA [Accessible M] : M.accepts.toDFA ≃ₗ M.toNerodeDFA where
+  toDFAHom := { toFun (x : ↑(Set.range M.accepts.leftQuotient)) := by
+                  obtain ⟨x, hx⟩ := x
+                  simp_all
+                  use ⟦M.eval hx.choose⟧
+                map_start := by
+                  simp_all
+                  have h := (id (Eq.refl fun y ↦ M.accepts.leftQuotient y = M.accepts) ▸ Eq.mp Set.mem_range._simp_1 M.accepts.toDFA.2.property ).choose_spec
+                  simp_all [Nerode, Language.leftQuotient_accepts]
+                  simp [accepts]
+                map_accept := by
+                  intro l
+                  have h := (id (Eq.refl fun y ↦ M.accepts.leftQuotient y = M.accepts) ▸ Eq.mp Set.mem_range._simp_1 M.accepts.toDFA.2.property ).choose_spec
+                  simp_all [Language.leftQuotient_accepts]
+
+
+
+                map_step := _ }
+  toInvDFAHom := { toFun (x : Quotient M.Nerode) := by
+                     use M.toNerodeDFA.acceptsFrom x
+                     simp [Language.leftQuotient_accepts]
+                     obtain ⟨s, hs⟩ := Quotient.exists_rep x
+                     subst hs
+                     simp
+                     obtain ⟨w, hw⟩ := M.allAccessible s
+                     use w; rw [hw]
+                   map_start := _
+                   map_accept := _
+                   map_step := _ }
+  left_inv := by sorry
+  right_inv := by sorry
 
 instance nerodeAutomaton_pres_accessible (M : DFA α σ) [Accessible M] : Accessible M.nerodeAutomaton where
   allAccessible := by

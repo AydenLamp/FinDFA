@@ -1,5 +1,105 @@
 import Mathlib
 
+/-!
+# FinDFA: Computable DFAs
+
+This file defines structures `FinDFA` and `AccessibleFinDFA`, and a function
+`FinDFA.toAccessible` that converts a `FinDFA` to an `AccessibleFinDFA`. This function is
+proven to preserve the language accepted by `FinDFA.toAccessible_pres_lang`.
+
+## Main definitions
+
+* `FinDFA α σ` - A DFA with alphabet `α` and state space `σ`. This is like `DFA α σ`, but with
+  the accepting states given as a `Finset σ` rather than a `Set σ`.
+
+* `FinDFA.getWordsLeqLength (n : ℕ)` - Returns a `Finset` of all words of length less than or
+  equal to `n` over the alphabet of the `FinDFA`.
+
+* `FinDFA.IsAccessibleState` - A predicate on states, true if the state is reachable from the
+  start state by some word.
+
+* `FinDFA.isAccessibleStateDecidable` - A decidability instance for `FinDFA.IsAccessibleState`.
+
+* `AccessibleFinDFA` - A structure extending `FinDFA` with a proof that every state is
+  accessible.
+
+* `FinDFA.toAccessible` - A function that converts a `FinDFA` to an `AccessibleFinDFA`.
+
+## Main theorems
+
+* `FinDFA.getWordsLeqLength_correct` - `w ∈ M.getWordsLeqLength n ↔ w.length ≤ n`.
+
+* `FinDFA.exists_short_access_word` - In order to construct `AccessibleFinDFA`s from `FinDFA`s,
+  we need to define a decidability instance on `FinDFA.isAccessibleState`. As written, this
+  involves searching the infinite space of all words. However, we prove in
+  `FinDFA.exists_short_access_word` that, if a state is accessible by any word, then it is
+  accessible by some word of length at most the number of states in the `FinDFA`. This allows
+  us to search through a finite space of words using our `FinDFA.getWordsLeqLength` function.
+
+* `FinDFA.toAccessible_pres_lang` - The language of a `FinDFA` is the same as the language of
+  the `AccessibleFinDFA` obtained by applying `FinDFA.toAccessible`.
+
+## Implementation notes
+
+We provide coercions from `FinDFA` and `AccessibleFinDFA` to `DFA`. This means that when you have
+`M : FinDFA α σ` or `M : AccessibleFinDFA α σ`, you can use functions defined on `DFA α σ` such as
+`eval`, `evalFrom`, and `accepts` by writing `(M : DFA α σ).eval` or `M.toDFA.eval`.
+
+Note that, just like `DFA`, the definitions of `FinDFA` and `AccessibleFinDFA` do not require the
+state space or alphabet to be finite or to have decidable equality.
+
+## Blueprint
+
+* One DEF entry for Mathlib's `DFA`
+Label : dfa
+Lean definitions to tag : None
+Content : Explain that this is Mathlib's DFA defintitoin.
+Explain that `DFA α σ` has fields `step`, `start`, `accept`,
+and methods `eval`, `evalFrom`, `accepts`. Explain
+the types of these.
+Explain that this definition does not require the state space or alphabet to be finite or
+decidable.
+(explain what decidable equality is)
+Dependencies : None
+
+* One DEF entry for `FinDFA`
+Label : fin-dfa
+lean defs :
+  - `FinDFA`
+Content : Explain the definition of the `FinDFA` structure, and how it differes from `DFA`
+by requiring `Fintype` and `DecidableEq` instances on the alphabet and state
+space (explain what those classes are)
+and by requiring the accepting states to be a `Finset` rather than a `Set` (explain the
+differnece)
+Explain how this allows a decidable procedure (what is that?)
+for determining if a state is accepting. Explain how this can be converted to a `DFA` in
+lean and how we use the `DFA` definitions for .evalFrom, .accepts, etc.
+Dependencies : None
+
+* One DEF entry for Accessible State and DFA definition
+label : accessable-fin-dfa
+lean defs :
+  - `FinDFA.IsAccessibleState`
+  - `AccessibleFinDFA`
+Content : Explain the definition of accessible states and the `AccessibleFinDFA` structure.
+Dependencies : fin-dfa
+
+* One lemma entry for `FinDFA.exists_short_access_word`
+Label : exists-short-access-word
+Lean lemmas to tag :
+  - `FinDFA.exists_short_access_word`
+  - `FinDFA.isAccessibleStateDecidable`
+  - `FinDFA.toAccessible`
+  - `FinDFA.toAccessible_pres_lang`
+Content : Prove it and explain why this means that every word that is
+accessible is accessible by a short word.
+Explain how this is used to create a DECIDABLE procedure for determining
+if a state is accessible. Explain how
+that allows for a language-preserving conversion from `FinDFA` to
+`AccessibleFinDFA` by restricting the state space.
+Dependencies : accessible-fin-dfa
+-/
+
 namespace List
 
 variable {α : Type*} [Fintype α] (w : List α)
