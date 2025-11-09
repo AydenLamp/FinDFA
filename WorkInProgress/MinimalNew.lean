@@ -1,48 +1,8 @@
-import MyProject.Hom
-import MyProject.Nerode
+import MyProject.NerodeNew
+import MyProject.HomNew
 import Mathlib
 
-/-!
-# The (minimal) Nerode Automaton
-
-We construct the *Nerode Automaton* of a given `M : AccessibleFinDFA`, which is another
-`AccessibleFinDFA` defined on the state space given by the quotient of the `nerode` equivalence
-relation on `M`'s states, with the transition function induced by `M`'s transition function.
-
-We then show that this automaton accepts the same language as `M`, and that it is minimal by the
-surjective-morphism based preorder on `AccessibleFinDFA`s.
-
-## Main Definitions
-
-* `AccessibleFinDFA.nerodeAutomaton` : A function that inputs an `M : AccessibleFinDFA` and outputs
-the Nerode automaton of the language defined by `M`.
-
-## Main Theorems
-
-* `AccessibleFinDFA.nerodeAutomaton_pres_lang` :
-  `M` and `M.nerodeAutomaton` accept the same language.
-
-* `AccessibleFinDFA.nerodeAutomaton_isMinimal` : `M.nerodeAutomaton` is minimal by the
-surjective-morphism based preorder on `AccessibleFinDFA`s. In other words, For any other
-`N : AccessableFinDFA` that accepts the same language as
- `M.nerodeAutomaton`, there exists a surjective
-morphism from `N.DFA` to `M.nerodeAutomaton.toDFA`.
-
-* `AccessibleFinDFA.nerodeAutomaton_minimal_states` :
- `M.nerodeAutomaton` has the minimal number
-of states among all `AccessibleFinDFA`s that accept the same language.
-
-# TODO
-
-Prove uniqueness of minimal automaton for all automata accepting the same language.
-
-Create function from regular languages to minimal `AccessibleFinDFA`s via left quotients
-## Blueprint
-
-TODO
--/
-
-namespace AccessibleFinDFA
+namespace DFA
 
 universe u v
 
@@ -51,7 +11,7 @@ variable {α : Type u} {σ : Type v}
 section Finite
 
 /-- A word indistinguishes two states iff it indistinguishes their transitions under any letter. -/
-lemma nerode_step (M : AccessibleFinDFA α σ) {s₁ s₂ : σ} (h : M.nerode s₁ s₂) (a : α) :
+lemma nerode_step (M : DFA α σ) {s₁ s₂ : σ} (h : M.nerode s₁ s₂) (a : α) :
     M.nerode (M.step s₁ a) (M.step s₂ a) := by
   simp_all [nerode, Indist]
   intros w
@@ -60,28 +20,80 @@ lemma nerode_step (M : AccessibleFinDFA α σ) {s₁ s₂ : σ} (h : M.nerode s�
 
 variable [Fintype α] [DecidableEq α] [Fintype σ] [DecidableEq σ]
 
-/-- The Nerode automaton of the `AccessibleFinDFA` `M`. -/
-def nerodeAutomaton (M : AccessibleFinDFA α σ) :
-    AccessibleFinDFA α (Quotient (M.nerode)) where
+def nerodeAutomaton (M : DFA α σ) :
+    DFA α (Quotient (M.nerode)) where
   step (s' : Quotient (M.nerode)) (a : α) :=
     Quotient.lift
       (fun s : σ ↦ ⟦M.step s a⟧)
       (by intros s₁ s₂ h; simp; apply nerode_step; apply h) s'
   start := ⟦M.start⟧
   accept := {⟦q⟧ | q ∈ M.accept }
-  is_accessible := by
-    have hacc := M.is_accessible
-    simp_all [FinDFA.IsAccessibleState]
+
+@[simp] lemma nerodeAutomaton_start_def (M : DFA α σ) :
+    M.nerodeAutomaton.start = ⟦M.start⟧ := rfl
+
+@[simp] lemma nerodeAutomaton_accept_def (M : DFA α σ) :
+    M.nerodeAutomaton.accept = {⟦q⟧ | q ∈ M.accept } := rfl
+
+@[simp] lemma nerodeAutomaton_step_def (M : DFA α σ) (s : σ) (a : α) :
+    M.nerodeAutomaton.step ⟦s⟧ a = ⟦M.step s a⟧ := rfl
+
+@[simp] lemma nerodeAutomaton_evalFrom_def (M : DFA α σ) (s : σ) (w : List α) :
+    M.nerodeAutomaton.evalFrom ⟦s⟧ w = ⟦M.evalFrom s w⟧ := by
+  simp [evalFrom]
+  exact List.foldl_hom (init := s) (l := w) (Quotient.mk M.nerode)
+    (fun (s₁ : σ) (a : α) ↦ M.nerodeAutomaton_step_def s₁ a)
+
+@[simp] lemma nerodeAutomaton_eval_def (M : DFA α σ) (w : List α) :
+    M.nerodeAutomaton.eval w = ⟦M.eval w⟧ := by simp [DFA.eval]
+
+instance nerodeAutomaton_pres_accessible (M : DFA α σ) [Accessible M] : Accessible M.nerodeAutomaton where
+  allAccessible := by
+    have hacc := M.allAccessible
+    simp_all [IsAccessibleState]
     apply Quotient.ind
     intro s
     specialize hacc s
     rcases hacc with ⟨w, hw⟩
     use w
-    simp [DFA.evalFrom] at hw ⊢
-    subst hw
-    exact List.foldl_hom (Quotient.mk M.nerode) fun x ↦ congrFun rfl
+    simp
+    rw [hw]
 
-def nerodeAutomaton_hom (M : AccessibleFinDFA α σ) :
+instance nerodeAutomaton_pres_fin (M : DFA α σ) [hf : Fin M] : Fin M.nerodeAutomaton where
+  finAccept := {⟦q⟧ | q ∈ hf.finAccept}
+  map_accept := by simp_all
+
+def nerodeAutomaton_of_lang (L : Language α) : DFA α (Set.range L.leftQuotient) where
+  step s a := by
+    refine ⟨s.val.leftQuotient [a], ?_⟩
+    obtain ⟨y, hy⟩ := s.prop
+    exists y ++ [a]
+    rw [← hy, Language.leftQuotient_append]
+  start := ⟨L, by exists []⟩
+  accept := { s | [] ∈ s.val }
+
+lemma nerodeAutomaton_equiv_nerodeAutomaton_of_lang (M : DFA α σ) [Accessible M] :
+    M.nerodeAutomaton ≃ₗ M.accepts.toDFA := by
+  refine DFA.Equiv.mk ?_ ?_ ?_ ?_
+  · refine DFA.Hom.mk ?_ ?_ ?_ ?_
+    · intros s
+      have hls : M.nerodeAutomaton.acceptsFrom s ∈ Set.range M.accepts.leftQuotient := by
+        obtain ⟨w, hw⟩ := M.nerodeAutomaton.allAccessible s
+        use w
+        sorry
+      exact ⟨M.nerodeAutomaton.acceptsFrom s, hls⟩
+    · simp
+      sorry
+    ·
+
+
+
+
+
+
+
+
+def nerodeAutomaton_hom (M : DFA α σ) [Accessible M] :
     M ↠ M.nerodeAutomaton := by
   exact
     { toFun := Quotient.mk (M.nerode)
@@ -100,10 +112,10 @@ def nerodeAutomaton_hom (M : AccessibleFinDFA α σ) :
         | cons a w ih =>
           have heq : a :: w = [a] ++ w := by simp
           simp_rw [heq, DFA.evalFrom_of_append]
-          have heq' : (M.nerodeAutomaton.toDFA.evalFrom ⟦s⟧ [a]) = ⟦M.toDFA.evalFrom s [a]⟧ := by
+          have heq' : (M.nerodeAutomaton.evalFrom ⟦s⟧ [a]) = ⟦M.evalFrom s [a]⟧ := by
             simp [nerodeAutomaton]
           rw [heq']
-          specialize ih (M.toDFA.evalFrom s [a])
+          specialize ih (M.evalFrom s [a])
           exact ih
       surjective := Quotient.mk_surjective }
 
@@ -137,7 +149,7 @@ lemma nerodeAutomaton_le (M : AccessibleFinDFA α σ) :
       surjective := Quotient.mk_surjective }
 
 /-- `M.nerodeAutomaton` accepts the same language as `M`. -/
-theorem nerodeAutomaton_pres_lang (M : AccessibleFinDFA α σ) :
+theorem nerodeAutomaton_pres_lang (M : DFA α σ) :
     (M.nerodeAutomaton : DFA α (Quotient (M.nerode))).accepts = (M : DFA α σ).accepts := by
   suffices h : M.nerodeAutomaton ≤ M by
     obtain ⟨h⟩ := h
@@ -321,3 +333,20 @@ def IsMinimalAlt (M : AccessibleFinDFA α σ) : Prop :=
   (N : DFA α σ₂).accepts = (M : DFA α σ).accepts → M.nerodeAutomaton ≤ N
 
 end AccessibleFinDFA
+
+namespace Language
+
+structure FinRegularLanguage (α : Type*) where
+  L : Language α
+  leftQuotients : Finset (Language α)
+  leftQuotient_mem : ∀ x : List α, L.leftQuotient x ∈ leftQuotients
+
+namespace FinRegularLanguage
+
+variable {α : Type*} (L : FinRegularLanguage α)
+def FinRegularLanguage.toAccessibleFinDFA
+
+end FinRegularLanguage
+
+
+end Language
