@@ -63,6 +63,12 @@ structure Hom (M : DFA α σ₁) (N : DFA α σ₂) where
 /-- `M →ₗ N` denotes the type of `DFA.Hom M N`. -/
 infixr:25 " →ₗ " => Hom
 
+lemma Hom.pres_acceptsFrom (f : M →ₗ N) (s : σ₁) :
+    M.acceptsFrom s = N.acceptsFrom (f.toFun s) := by
+  ext w
+  simp_all [mem_acceptsFrom]
+  rw [← f.map_step, f.map_accept]
+
 /-- A morphism of DFAs preserves the accepted language. -/
 theorem Hom.pres_lang (f : M →ₗ N) : M.accepts = N.accepts := by
   ext w
@@ -110,7 +116,7 @@ def equivRefl (M : DFA α σ₁) : M ≃ₗ M where
 /-! ### Surjective Morphisms of AccessibleFinDFAs -/
 
 /-- A structure extending `DFA.Hom` asserting that the morphism is surjective -/
-structure HomSurj (M : DFA α σ₁) [Accessible M] (N : DFA α σ₂) [Accessible N]
+structure HomSurj (M : DFA α σ₁) (N : DFA α σ₂)
     extends f : M →ₗ (N : DFA α σ₂) where
   /-- The function is surjective. -/
   surjective : Function.Surjective f.toFun
@@ -118,7 +124,7 @@ structure HomSurj (M : DFA α σ₁) [Accessible M] (N : DFA α σ₂) [Accessib
 /-- `M ↠ N` denotes the type of `DFA.HomSurj M N`. -/
 infixr:25 " ↠ " => HomSurj
 
-variable {M : DFA α σ₁} [Accessible M] {N : DFA α σ₂} [Accessible N]
+variable {M : DFA α σ₁} {N : DFA α σ₂}
 in
 /-- Forget the surjectivity proof and view `HomSurj` as a DFA morphism. -/
 @[simp] def HomSurj.toDFAHom (f : M ↠ N) : M →ₗ N where
@@ -126,6 +132,62 @@ in
   map_start := f.map_start
   map_accept := f.map_accept
   map_step := f.map_step
+
+variable {M : DFA α σ₁} {N : DFA α σ₂}
+in
+/-- Lift a `HomSurj` that is also injective into an `Equiv` by using the
+noncomputable inverse function `f.toFun.surjInv f.surjective` -/
+noncomputable def HomSurj.equiv_of_inj (f : M ↠ N) (hf : f.toFun.Injective) : M ≃ₗ N where
+  toDFAHom := f.toDFAHom
+  toInvDFAHom := {
+    toFun (s : σ₂) := f.toFun.surjInv f.surjective s
+    map_start := by
+      have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
+      have hid : ((f.toFun.surjInv f.surjective) ∘ f.toFun) = id := by
+        rw [← Function.leftInverse_iff_comp]
+        exact Function.leftInverse_surjInv hbij
+      have hf : f.toFun M.start = N.start := by
+        apply f.map_start
+      rw [← hf]
+      have heq : Function.surjInv f.surjective (f.toFun M.start) =
+        (Function.surjInv f.surjective ∘ f.toFun) M.start := by rfl
+      rw [heq, hid]
+      simp
+    map_accept (s : σ₂):= by
+      have hf' := f.map_accept (Function.surjInv f.surjective s)
+      rw [hf']
+      have hid : (f.toFun ∘ (f.toFun.surjInv f.surjective)) = id := by
+        rw [← Function.rightInverse_iff_comp]
+        exact Function.rightInverse_surjInv f.surjective
+      have heq : f.toFun (Function.surjInv f.surjective s) =
+        (f.toFun ∘ (Function.surjInv f.surjective)) s := by rfl
+      rw [heq, hid]
+      simp
+    map_step (s : σ₂) (w : List α) := by
+      have hf' := f.map_step (Function.surjInv f.surjective s) w
+      have hid : (f.toFun ∘ (f.toFun.surjInv f.surjective)) = id := by
+        rw [← Function.rightInverse_iff_comp]
+        exact Function.rightInverse_surjInv f.surjective
+      have heq : f.toFun (Function.surjInv f.surjective s) =
+        (f.toFun ∘ (Function.surjInv f.surjective)) s := by rfl
+      rw [heq, hid] at hf'
+      simp at hf'
+      rw [← hf']
+      have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
+      have hid' : ((f.toFun.surjInv f.surjective) ∘ f.toFun) = id := by
+        rw [← Function.leftInverse_iff_comp]
+        exact Function.leftInverse_surjInv hbij
+      have heq' :
+        Function.surjInv f.surjective (f.toFun
+          (M.evalFrom (Function.surjInv f.surjective s) w)) =
+        (Function.surjInv f.surjective ∘ f.toFun)
+          (M.evalFrom (Function.surjInv f.surjective s) w) := by rfl
+      rw [heq', hid']
+      simp }
+  left_inv := by
+    have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
+    exact Function.leftInverse_surjInv hbij
+  right_inv := Function.rightInverse_surjInv f.surjective
 
 /-! ### Partial Order on Accessible DFAs -/
 
@@ -215,8 +277,8 @@ lemma accessibleLE_antisymm (h₁ : M ≤ N) (h₂ : N ≤ M) : Nonempty (M ≃�
       simp_all [eval])
 
 /-- An accessible DFA is minimal if every smaller accessible DFA is equivalent to it. -/
-def AccessibleIsMinimal (M : DFA α σ₁) [Accessible M] : Prop :=
-  ∀ {σ₂ : Type*} [Fintype σ₂] [DecidableEq σ₂] (N : DFA α σ₂) [Accessible N] (_ : N ≤ M),
+def IsMinimal (M : DFA α σ₁) [Accessible M] : Prop :=
+  ∀ {σ₂ : Type*} (N : DFA α σ₂) [Accessible N] (_ : N ≤ M),
     Nonempty (M ≃ₗ N)
 
 end DFA
