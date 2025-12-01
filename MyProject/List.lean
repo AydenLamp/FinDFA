@@ -8,7 +8,7 @@ This file defines functions on finsets of words over finite alphabets.
 
 ## Main Definitions
 
-* `List.getWordsLeqLength` - Given a finite alphabet and an `n : ℕ` ,
+* `List.getWordsLeqLength` - Given a finite alphabet and an `n : ℕ`,
 returns the `Finset` of all words with length less than or equal to `n`
 
 ## Main Theorems
@@ -40,6 +40,7 @@ variable [DecidableEq α]
     let shorterWords := getWordsLeqLength n
     shorterWords ∪ (shorterWords.biUnion getNextWords)
 
+/-- `getWordsLeqLength n` contains exactly the words of length `≤ n`. -/
 theorem getWordsLeqLength_correct (n : ℕ) (w : List α) :
     w ∈ getWordsLeqLength n ↔ w.length ≤ n := by
   constructor

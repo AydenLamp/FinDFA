@@ -1,4 +1,4 @@
-import MyProject.New.Accessible
+import MyProject.DFA.Accessible
 
 /-!
 # Morphisms between DFAs
@@ -41,6 +41,17 @@ morphism from `N.toDFA` to `M.toDFA`.
 * `M ↠ N` - Notation for `DFA.HomSurj M N`.
 
 * `M ≤ N` - Notation for the partial order on Accessible DFAs.
+
+## Implementation Notes
+
+Note that the partial order on Accessible DFAs is not given a `LE` instance on any type,
+becuase the partial order is defined on all Accessible DFAs with the same alphabet type, but they
+can have different state types. Thus, there is no single type of Accessible DFAs to
+put the `LE` instance on.
+
+## TODO
+
+Prove that equivalence is symmetric and transitive
 -/
 
 namespace DFA
@@ -63,14 +74,14 @@ structure Hom (M : DFA α σ₁) (N : DFA α σ₂) where
 /-- `M →ₗ N` denotes the type of `DFA.Hom M N`. -/
 infixr:25 " →ₗ " => Hom
 
-lemma Hom.pres_acceptsFrom (f : M →ₗ N) (s : σ₁) :
+lemma Hom.pres_acceptsFrom {M : DFA α σ₁} {N : DFA α σ₂} (f : M →ₗ N) (s : σ₁) :
     M.acceptsFrom s = N.acceptsFrom (f.toFun s) := by
   ext w
   simp_all [mem_acceptsFrom]
   rw [← f.map_step, f.map_accept]
 
 /-- A morphism of DFAs preserves the accepted language. -/
-theorem Hom.pres_lang (f : M →ₗ N) : M.accepts = N.accepts := by
+theorem Hom.pres_lang {M : DFA α σ₁} {N : DFA α σ₂} (f : M →ₗ N) : M.accepts = N.accepts := by
   ext w
   simp_all [mem_accepts, eval]
   constructor
@@ -92,26 +103,31 @@ def homRefl (M : DFA α σ₁) : M →ₗ M where
   map_accept := by intro q; simp
   map_step := by intro q w; simp
 
+/-- Regesters a injective coersion from morphisms `M →ₗ N` to functions from the state type of M
+to the state type of N. -/
+instance {M : DFA α σ₁} {N : DFA α σ₂} : CoeFun (M →ₗ N) fun _ ↦ (σ₁ → σ₂) where
+  coe f := f.toFun
+
 /-- An equivalence of DFAs is a bijective morphism. -/
 structure Equiv (M : DFA α σ₁) (N : DFA α σ₂) where
-  /-- The forward morphism. -/
-  toDFAHom : M →ₗ N
-  /-- The reverse morphism. -/
-  toInvDFAHom : N →ₗ M
-  /-- Left inverse property. -/
-  left_inv : Function.LeftInverse toInvDFAHom.toFun toDFAHom.toFun
-  /-- Right inverse property. -/
-  right_inv : Function.RightInverse toInvDFAHom.toFun toDFAHom.toFun
+  /-- The bijection between the state spaces -/
+  statesEquiv : σ₁ ≃ σ₂
+  /-- The equivalence preserves the start state. -/
+  map_start : statesEquiv M.start = N.start
+  /-- The equivalence preserves the set of accepting states. -/
+  map_accept (q : σ₁) : q ∈ M.accept ↔ statesEquiv q ∈ N.accept
+  /-- The equivalence preserves state transitions. -/
+  map_step (q : σ₁) (w : List α) : statesEquiv (M.evalFrom q w) = N.evalFrom (statesEquiv q) w
 
 /-- `M ≃ₗ N` denotes the type of `DFA.Equiv M N`. -/
 infixr:25 " ≃ₗ " => Equiv
 
 /-- The identity equivalence on a DFA. -/
 def equivRefl (M : DFA α σ₁) : M ≃ₗ M where
-  toDFAHom := M.homRefl
-  toInvDFAHom := M.homRefl
-  left_inv := by tauto
-  right_inv := by tauto
+  statesEquiv := Equiv.refl σ₁
+  map_start := by rfl
+  map_accept := by simp
+  map_step := by simp
 
 /-! ### Surjective Morphisms of AccessibleFinDFAs -/
 
@@ -119,10 +135,15 @@ def equivRefl (M : DFA α σ₁) : M ≃ₗ M where
 structure HomSurj (M : DFA α σ₁) (N : DFA α σ₂)
     extends f : M →ₗ (N : DFA α σ₂) where
   /-- The function is surjective. -/
-  surjective : Function.Surjective f.toFun
+  surjective : Function.Surjective f
 
 /-- `M ↠ N` denotes the type of `DFA.HomSurj M N`. -/
 infixr:25 " ↠ " => HomSurj
+
+/-- Regesters a injective coersion from morphisms `M ↠ N` to functions from the state type of M
+to the state type of N. -/
+instance {M : DFA α σ₁} {N : DFA α σ₂} : CoeFun (M ↠ N) fun _ ↦ (σ₁ → σ₂) where
+  coe f := f.toFun
 
 variable {M : DFA α σ₁} {N : DFA α σ₂}
 in
@@ -138,56 +159,14 @@ in
 /-- Lift a `HomSurj` that is also injective into an `Equiv` by using the
 noncomputable inverse function `f.toFun.surjInv f.surjective` -/
 noncomputable def HomSurj.equiv_of_inj (f : M ↠ N) (hf : f.toFun.Injective) : M ≃ₗ N where
-  toDFAHom := f.toDFAHom
-  toInvDFAHom := {
-    toFun (s : σ₂) := f.toFun.surjInv f.surjective s
-    map_start := by
-      have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
-      have hid : ((f.toFun.surjInv f.surjective) ∘ f.toFun) = id := by
-        rw [← Function.leftInverse_iff_comp]
-        exact Function.leftInverse_surjInv hbij
-      have hf : f.toFun M.start = N.start := by
-        apply f.map_start
-      rw [← hf]
-      have heq : Function.surjInv f.surjective (f.toFun M.start) =
-        (Function.surjInv f.surjective ∘ f.toFun) M.start := by rfl
-      rw [heq, hid]
-      simp
-    map_accept (s : σ₂):= by
-      have hf' := f.map_accept (Function.surjInv f.surjective s)
-      rw [hf']
-      have hid : (f.toFun ∘ (f.toFun.surjInv f.surjective)) = id := by
-        rw [← Function.rightInverse_iff_comp]
-        exact Function.rightInverse_surjInv f.surjective
-      have heq : f.toFun (Function.surjInv f.surjective s) =
-        (f.toFun ∘ (Function.surjInv f.surjective)) s := by rfl
-      rw [heq, hid]
-      simp
-    map_step (s : σ₂) (w : List α) := by
-      have hf' := f.map_step (Function.surjInv f.surjective s) w
-      have hid : (f.toFun ∘ (f.toFun.surjInv f.surjective)) = id := by
-        rw [← Function.rightInverse_iff_comp]
-        exact Function.rightInverse_surjInv f.surjective
-      have heq : f.toFun (Function.surjInv f.surjective s) =
-        (f.toFun ∘ (Function.surjInv f.surjective)) s := by rfl
-      rw [heq, hid] at hf'
-      simp at hf'
-      rw [← hf']
-      have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
-      have hid' : ((f.toFun.surjInv f.surjective) ∘ f.toFun) = id := by
-        rw [← Function.leftInverse_iff_comp]
-        exact Function.leftInverse_surjInv hbij
-      have heq' :
-        Function.surjInv f.surjective (f.toFun
-          (M.evalFrom (Function.surjInv f.surjective s) w)) =
-        (Function.surjInv f.surjective ∘ f.toFun)
-          (M.evalFrom (Function.surjInv f.surjective s) w) := by rfl
-      rw [heq', hid']
-      simp }
-  left_inv := by
-    have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
-    exact Function.leftInverse_surjInv hbij
-  right_inv := Function.rightInverse_surjInv f.surjective
+  statesEquiv := by
+    refine _root_.Equiv.mk (f.toFun) (f.toFun.surjInv f.surjective) ?_ ?_
+    · have hbij : f.toFun.Bijective := by simp_all [f.surjective, Function.Bijective]
+      exact Function.leftInverse_surjInv hbij
+    · exact Function.rightInverse_surjInv f.surjective
+  map_start := f.map_start
+  map_accept := f.map_accept
+  map_step := f.map_step
 
 /-! ### Partial Order on Accessible DFAs -/
 
@@ -217,7 +196,7 @@ lemma accessibleLE_trans (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
   -- Compose the underlying DFA morphisms and show surjectivity.
   let I : O →ₗ M := by
     refine Hom.mk
-      (toFun := f.toFun ∘ g.toFun)
+      (toFun := f ∘ g)
       (map_start := by
         simp
         have hg := g.map_start
@@ -233,11 +212,11 @@ lemma accessibleLE_trans (h₁ : M ≤ N) (h₂ : N ≤ O) : M ≤ O := by
         intro q w
         simp_all
         have hg := g.map_step q w
-        have hf := f.map_step (g.toFun q) w
+        have hf := f.map_step (g q) w
         simp_all)
   refine HomSurj.mk I ?_
   -- Surjectivity of the composition.
-  have hI : I.toFun = f.toFun ∘ g.toFun := rfl
+  have hI : I.toFun = f ∘ g := rfl
   simpa [hI] using Function.Surjective.comp f.surjective g.surjective
 
 variable {M : DFA α σ₁} [Accessible M] {N : DFA α σ₂} [Accessible N]
@@ -247,34 +226,29 @@ lemma accessibleLE_antisymm (h₁ : M ≤ N) (h₂ : N ≤ M) : Nonempty (M ≃�
   obtain f := h₁.some
   obtain g := h₂.some
   refine ⟨?_⟩
-  refine DFA.Equiv.mk
-    (toDFAHom := g.toDFAHom)
-    (toInvDFAHom := f.toDFAHom)
-    (left_inv := by
-      -- Use accessibility to move back to the start state, then cancel via maps.
-      simp_all [Function.LeftInverse]
-      intro s
-      obtain ⟨w, hs⟩ := M.allAccessible s
-      rw [← hs]
-      have hg₁ := g.map_step M.start w
-      have hf₁ := f.map_step (g.toFun M.start) w
-      have hg₂ := g.map_start
-      have hf₂ := f.map_start
-      rw [← hg₁] at hf₁
-      subst hs
-      simp_all [eval])
-    (right_inv := by
-      simp_all [Function.RightInverse]
-      intro s
-      obtain ⟨w, hs⟩ := N.allAccessible s
-      rw [← hs]
-      have hg₁ := g.map_step M.start w
-      have hf₁ := f.map_step (g.toFun M.start) w
-      have hg₂ := g.map_start
-      have hf₂ := f.map_start
-      rw [← hg₁] at hf₁
-      subst hs
-      simp_all [eval])
+  let equiv : σ₁ ≃ σ₂ := by
+    refine _root_.Equiv.mk (g.toFun) (f.toFun) ?_ ?_
+    · intros s
+      have hsplit := M.accessible_split s
+      rcases hsplit with (hs | ⟨w, hw, hs⟩)
+      · subst hs
+        simp [g.map_start, f.map_start]
+      · subst hs
+        simp_all [eval, g.map_step, f.map_step, g.map_start, f.map_start]
+    · intros s
+      have hsplit := N.accessible_split s
+      rcases hsplit with (hs | ⟨w, hw, hs⟩)
+      · subst hs
+        simp [g.map_start, f.map_start]
+      · subst hs
+        simp_all [eval, g.map_step, f.map_step, g.map_start, f.map_start]
+  refine Equiv.mk equiv ?_ ?_ ?_
+  · unfold equiv
+    simp [g.map_start]
+  · unfold equiv
+    simp [g.map_accept]
+  · unfold equiv
+    simp [g.map_step]
 
 /-- An accessible DFA is minimal if every smaller accessible DFA is equivalent to it. -/
 def IsMinimal (M : DFA α σ₁) [Accessible M] : Prop :=

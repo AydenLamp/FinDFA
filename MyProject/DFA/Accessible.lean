@@ -1,5 +1,5 @@
-import MyProject.New.List
-import MyProject.New.Fin
+import MyProject.List
+import MyProject.DFA.Fin
 
 /-!
 # Accessible DFAs
@@ -23,9 +23,9 @@ function `DFA.toAccessible` for constructing an accessible DFA from any DFA.
 * `DFA.toAccessible_accessible` - An `Accessible` typeclass instance for `M.toAccessible`
 
 * `DFA.toAccessible_decidable` - An instance of `DecidablePred M.isAccessibleState`, given
-`Fin M` and `Fintype` and `DecidableEq` instances.
+`Fin M` and `Fintype` and `DecidableEq` instances on `σ` and `α`.
 
-* `DFA.toAccessile_fin` - Given `Fin M` for `M : DFA α σ` and `Fintype` and `DecidableEq` instances
+* `DFA.toAccessible_fin` - Given `Fin M` for `M : DFA α σ` and `Fintype` and `DecidableEq` instances
 on `α` and `σ`, we obtain the instance `Fin M.toAccessible`.
 
 ## Main Theorems
@@ -35,6 +35,10 @@ on `α` and `σ`, we obtain the instance `Fin M.toAccessible`.
 * `DFA.exists_short_access_word` - If a state is accessible, it is accessed by some word of length
 less than or equal to the amount of states. This allows us to obtain a decidability instance
 for `M.isAccessibleState` by searching over a finite set of words.
+
+## Refrences
+
+TODO
 -/
 
 namespace DFA
@@ -54,6 +58,20 @@ class Accessible where
 
 def allAccessible [Accessible M] (s : σ) : M.IsAccessibleState s :=
   Accessible.allAccessible s
+
+/-- Given a state of an Accessible DFA, noncomputably obtain the word
+that accesses it. -/
+noncomputable def getAccessWord [Accessible M] (s : σ) : List α := by
+  have h := M.allAccessible s
+  simp [IsAccessibleState] at h
+  exact Classical.choose h
+
+/-- the word returned by `getAccessWord s` accesses `s`. -/
+@[simp] theorem getAccessWord_correct [Accessible M] (s : σ) :
+    M.eval (M.getAccessWord s) = s := by
+  have h := M.allAccessible s
+  simp [IsAccessibleState] at h
+  apply Classical.choose_spec h
 
 /-- Given a `M : DFA α σ`, `M.toAccessible` is `M` but with all
 the non-accessible states removed. -/
@@ -113,6 +131,7 @@ lemma step_pres_isAccessibleState {s : σ} (hs : M.IsAccessibleState s) (a : α)
   ext s x
   simp [acceptsFrom]
 
+/-- The language of `M.toAccessible` is equal to the language of `M`. -/
 @[simp] lemma toAccessible_pres_accepts :
     M.toAccessible.accepts = M.accepts := by simp [accepts, acceptsFrom]
 
@@ -154,11 +173,11 @@ end InductionPrincipals
 
 In order to prove that `M.toAccessible` preserves Finiteness (that is, if we can return
 the set of accepting states of `M.toAccessible` as a Finset, and we can infer a DecidableEq
-and Fintype instance on {s // M.IsAccessibleState s}), we need to show that `M.IsAccessibleState`
+and Fintype instance on `{s // M.IsAccessibleState s}`, we need to show that `M.IsAccessibleState`
 is a decidable predicate when `M` has a `Fin` instance and `σ` and `α` have Fintype and DecidableEq
 instances.
 
-To to this, we prove that a state is accessible iff it is accessible by some word of length at most
+To do this, we prove that a state is accessible iff it is accessible by some word of length at most
 `|σ|`. This allows us to check accessibility by checking a finite number of words.
 -/
 
@@ -216,12 +235,10 @@ instance IsAccessibleState_decidable : DecidablePred M.IsAccessibleState := by
   exact decidable_of_decidable_of_iff (M.IsAccessibleState_iff_in_wordsLeqCard s)
 
 /-- Given `M` is Finite, `M.toAccessible` has a `Fin` instance. -/
-instance toAccessible.Fin [hFin : Fin M] : Fin (M.toAccessible) where
+instance toAccessible_fin [hFin : Fin M] : Fin (M.toAccessible) where
   finAccept := Finset.subtype M.IsAccessibleState hFin.finAccept
   accept_eq := by
     ext s
     simp
 
 end DFA
-
-#min_imports

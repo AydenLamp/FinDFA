@@ -54,7 +54,6 @@ Use `lowerCamelCase` for all other terms of `Type`s (basically anything else).
 **Examples from this project:**
 - `pNatPow` - exponentiation function for semigroups
 - `REquiv.set` - the R-class of an elemnent as a set
-- `lmult_compat`, `rmult_compat` - compatibility lemmas
 
 ### Special Cases
 
