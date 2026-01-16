@@ -2,7 +2,7 @@ import Mathlib.Data.Finset.Union
 import Mathlib.Data.Nat.SuccPred
 
 /-!
-# Operations on words over finite alphabets
+# Operations on words over finite alphabets (List.lean)
 
 This file defines functions on finsets of words over finite alphabets.
 

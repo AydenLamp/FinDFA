@@ -25,10 +25,6 @@ that respect the transition function, start state, and accept states of the DFAs
 * `M ≃ N` - Notation for `DFA.Equiv M N`.
 
 * `M ↠ N` - Notation for `DFA.HomSurj M N`.
-
-## TODO
-
-Prove that equivalence is symmetric and transitive
 -/
 
 namespace DFA
@@ -232,4 +228,5 @@ noncomputable def HomSurj.equivOfInj (f : M ↠ N) (hf : f.toFun.Injective) : M 
   map_accept := f.map_accept
   map_step := f.map_step
 
+#check Min
 end DFA

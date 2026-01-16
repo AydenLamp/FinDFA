@@ -1,0 +1,335 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+
+\title{Lean Formalization of DFA Minimization}
+\author{}
+\date{}
+
+\setlist[itemize]{topsep=3pt, itemsep=2pt, leftmargin=1.25em}
+
+\begin{document}
+\maketitle
+
+\section{Project overview}
+
+This repository contains a Lean 4 formalization of \textbf{deterministic finite automata (DFAs)} and the classical \textbf{minimization theorem}: given a DFA, construct a \textbf{canonical minimal DFA} that accepts the same language, and prove it is \textbf{unique up to isomorphism} (here: bijective DFA morphism).
+
+Mathlib already defines DFAs and basic operations on them, but it does not include standard automata-theory infrastructure such as \textbf{morphisms}, \textbf{accessibility}, and \textbf{minimization}. This project fills that gap, and also develops \textbf{computable} versions of the key definitions so that the constructions can be executed when the input DFA is effectively finite.
+
+\section{Lean 4 and Mathlib (minimal background)}
+
+Lean 4 is an interactive theorem prover and functional programming language. In Lean, definitions are written as programs, and theorems are written as types whose inhabitants are proofs. Mathlib is the main community library of formalized mathematics and related theory, including some computability and automata definitions.
+
+This document includes Lean snippets. You do not need to read them as executable code. The main point is that the definitions and proofs are fully machine checked.
+
+\section{DFAs in Mathlib}
+
+A DFA is parameterized by an alphabet type $\alpha$ and a state type $\sigma$:
+\begin{itemize}
+  \item $\alpha$ is the type of input symbols
+  \item $\sigma$ is the type of states
+\end{itemize}
+
+In Mathlib, $\sigma$ is not required to be finite. This is convenient for theory, but finiteness (and computability) must be added later when we want executable algorithms.
+
+A DFA has three fields:
+\begin{itemize}
+  \item \texttt{step : σ → α → σ} is the transition function
+  \item \texttt{start : σ} is the start state
+  \item \texttt{accept : Set σ} is the set of accepting states
+\end{itemize}
+
+\begin{Verbatim}
+structure DFA (α : Type u) (σ : Type v) where
+  step : σ → α → σ
+  start : σ
+  accept : Set σ
+\end{Verbatim}
+
+\subsection{Evaluating a DFA on a word}
+
+A word is represented as a list \texttt{List α}. The evaluation function folds transitions along the list:
+
+\begin{Verbatim}
+def evalFrom (M : DFA α σ) (s : σ) : List α → σ := List.foldl M.step s
+def eval (M : DFA α σ) : List α → σ := M.evalFrom M.start
+\end{Verbatim}
+
+A DFA accepts a word if the final state lies in the accepting set:
+
+\begin{Verbatim}
+def acceptsFrom (M : DFA α σ) (s : σ) (w : List α) : Prop := M.evalFrom s w ∈ M.accept
+def accepts (M : DFA α σ) : Language α := { w | M.acceptsFrom M.start w }
+\end{Verbatim}
+
+Here \texttt{Language α} is a set of words over $\alpha$. So \texttt{M.accepts} is the language recognized by \texttt{M}.
+
+\section{DFA morphisms}
+
+A central ingredient in minimization is a notion of structure-preserving map between DFAs.
+
+A morphism from \texttt{M} to \texttt{N} (same alphabet) is a function on states that preserves:
+\begin{enumerate}[label=(\arabic*), leftmargin=1.75em]
+  \item the start state
+  \item acceptance
+  \item behavior on all words (equivalently, it commutes with evaluation)
+\end{enumerate}
+
+In Lean we package this as a structure whose fields include the function plus proofs of the preservation properties:
+
+\begin{Verbatim}
+structure Hom (M : DFA α σ₁) (N : DFA α σ₂) where
+  toFun : σ₁ → σ₂
+  map_start : toFun M.start = N.start
+  map_accept (q : σ₁) : q ∈ M.accept ↔ toFun q ∈ N.accept
+  map_step (q : σ₁) (w : List α) :
+    toFun (M.evalFrom q w) = N.evalFrom (toFun q) w
+
+infixr:25 " →ₗ " => Hom
+\end{Verbatim}
+
+Intuition: \texttt{map\_step} says ``if you run \texttt{M} from state \texttt{q} on word \texttt{w} and then map the resulting state, you get the same result as mapping \texttt{q} first and then running \texttt{N} on \texttt{w}.''
+
+\subsection{Morphisms preserve recognized language}
+
+A standard theorem is that if there is a morphism \texttt{f : M →ₗ N}, then the DFAs recognize the same language.
+
+The proof is essentially one line of reasoning written out carefully: a word is accepted by \texttt{M} iff the reached state is accepting; \texttt{f} preserves (i) which state you reach and (ii) which states are accepting.
+
+\begin{Verbatim}
+theorem Hom.pres_lang {M : DFA α σ₁} {N : DFA α σ₂} (f : M →ₗ N) :
+    M.accepts = N.accepts := by
+  ext w
+  simp only [accepts, acceptsFrom, Set.mem_setOf_eq]
+  constructor
+  · intro h
+    rw [f.map_accept] at h
+    rw [f.map_step M.start w] at h
+    rw [f.map_start] at h
+    exact h
+  · intro h
+    rw [f.map_accept, f.map_step M.start w, f.map_start]
+    exact h
+\end{Verbatim}
+
+We also define:
+\begin{itemize}
+  \item \textbf{surjective morphisms}: the underlying function is surjective (notation in the codebase: \texttt{N ↠ M})
+  \item \textbf{equivalences}: bijective morphisms (notation in the codebase: \texttt{M ≃ₗ N})
+\end{itemize}
+
+Surjective morphisms define a preorder that matches the standard ``can be obtained by quotienting states'' notion.
+
+\section{What is DFA minimization?}
+
+Different DFAs can accept the same language. Minimization produces a DFA with no redundant structure, and it is canonical up to renaming states.
+
+A common informal definition is ``fewest states,'' but in automata theory it is convenient to define minimality using morphisms:
+\begin{quote}
+For DFAs over the same alphabet, define $M \le N$ iff there exists a \textbf{surjective} morphism $N \twoheadrightarrow M$.
+\end{quote}
+
+This captures the idea that $M$ is obtained from $N$ by collapsing states in a way that preserves behavior.
+
+A \textbf{minimal DFA} for a language $L$ is a DFA $M$ recognizing $L$ such that $M \le N$ for every DFA $N$ recognizing $L$. Such an $M$ is unique up to equivalence.
+
+This project formalizes this preorder, constructs a minimal DFA, proves it recognizes the same language, and proves uniqueness up to equivalence.
+
+\section{The construction used in this project}
+
+There are multiple minimization algorithms (for example, Hopcroft’s partition refinement algorithm). This project uses the classical ``quotient by Nerode equivalence'' construction because it matches the theoretical statement of the Myhill--Nerode theorem and is proof-friendly in Lean.
+
+\subsection{Nerode equivalence on states}
+
+Fix a DFA \texttt{M : DFA α σ}. For a state \texttt{q : σ}, consider the language accepted when starting from \texttt{q} rather than from \texttt{start}. Two states are Nerode equivalent if these ``residual'' languages are equal:
+
+\begin{Verbatim}
+def NerodeEquivalence (s₁ s₂ : σ) : Prop :=
+  M.acceptsFrom s₁ = M.acceptsFrom s₂
+\end{Verbatim}
+
+If we quotient the state space by this equivalence relation, we get a DFA whose states are equivalence classes:
+
+\begin{Verbatim}
+def toNerodeDFA :
+    DFA α (Quotient (M.nerodeEquiv)) where
+  step (s' : Quotient (M.nerodeEquiv)) (a : α) :=
+    Quotient.lift
+      (fun s : σ ↦ ⟦M.step s a⟧)
+      (by intros s₁ s₂ h; simp; apply nerodeEquiv.step; apply h) s'
+  start := ⟦M.start⟧
+  accept := {⟦q⟧ | q ∈ M.accept }
+\end{Verbatim}
+
+What is happening in the \texttt{step} definition: since the next state must be well-defined on equivalence classes, we use \texttt{Quotient.lift}. The proof obligation shows that if \texttt{s₁} and \texttt{s₂} are equivalent, then their \texttt{step} images are also equivalent, so the definition does not depend on the chosen representative.
+
+\subsection{Accessibility and removing unreachable states}
+
+Quotienting alone is not enough when the input DFA has unreachable states, because those states still appear as equivalence classes even though they play no role in the language.
+
+We define a state to be \textbf{accessible} if it is reachable from the start state by some word:
+
+\begin{Verbatim}
+def IsAccessibleState (s : σ) : Prop :=
+  ∃ w : List α, M.eval w = s
+\end{Verbatim}
+
+Then we restrict the DFA to the subtype of accessible states. The new state type is
+\texttt{\{ s // M.IsAccessibleState s \}}, meaning ``states paired with a proof they are accessible.''
+
+\begin{Verbatim}
+def toAccessible : DFA α {s // M.IsAccessibleState s} where
+  step s a := ⟨M.step s.val a, by
+    obtain ⟨x, hx⟩ := s.prop
+    use x ++ [a]
+    simp [hx]⟩
+  start := ⟨M.start, by use []; simp⟩
+  accept := {s | s.val ∈ M.accept}
+\end{Verbatim}
+
+Finally, minimization is:
+
+\begin{Verbatim}
+def minimize : DFA α (Quotient (M.toAccessible.nerodeEquiv)) :=
+  M.toAccessible.toNerodeDFA
+\end{Verbatim}
+
+So \texttt{minimize} first removes unreachable states, then collapses Nerode-equivalent states.
+
+\section{Computability and finite DFAs}
+
+Mathlib’s \texttt{DFA} definition is intentionally general. If the state type $\sigma$ is arbitrary and \texttt{accept : Set σ} is an arbitrary predicate, there is no reason acceptance should be decidable or computable.
+
+This project separates two layers:
+\begin{enumerate}[label=(\arabic*), leftmargin=1.75em]
+  \item \textbf{Abstract theory}: works for arbitrary $\sigma$ and \texttt{Set σ}.
+  \item \textbf{Computable layer}: adds finiteness and decidability assumptions so that we can actually execute constructions like accessibility checking and Nerode equivalence testing.
+\end{enumerate}
+
+\subsection{A computable accepting set: the \texttt{Fin} typeclass}
+
+We introduce a small typeclass that stores the accepting states as a \texttt{Finset σ} (a finite, computable set), together with a proof it matches the original \texttt{Set σ}:
+
+\begin{Verbatim}
+class Fin (M : DFA α σ) where
+  finAccept : Finset σ
+  accept_eq : ↑finAccept = M.accept
+\end{Verbatim}
+
+With \texttt{Fin M} and \texttt{DecidableEq σ}, membership in the accepting set becomes a decision procedure, so acceptance of a word becomes computable.
+
+\section{Decidable Nerode equivalence via bounded equivalence}
+
+The definition of Nerode equivalence quantifies over all words (an infinite set), so it is not decidable in general.
+
+The key idea is to reduce the infinite check to a finite one when $\sigma$ is finite.
+
+\subsection{Step 1: bounded Nerode equivalence}
+
+For a natural number $k$, define ``$k$-bounded Nerode equivalence'':
+
+\begin{quote}
+States $s_1$ and $s_2$ are $k$-bounded equivalent if for every word $w$ with $\lvert w\rvert \le k$, starting from $s_1$ accepts $w$ iff starting from $s_2$ accepts $w$.
+\end{quote}
+
+This is a finite condition once we know there are only finitely many words up to length $k$ (e.g.\ when $\alpha$ is finite, or when we restrict to a finite test set produced by an enumeration).
+
+Intuition: $k$-bounded equivalence compares states only by what they do on short suffixes.
+
+\subsection{Step 2: monotonic refinement}
+
+As $k$ increases, the bounded equivalence relation can only get finer:
+\begin{itemize}
+  \item if two states are distinguishable by some short word, they stay distinguishable
+  \item allowing longer distinguishing words can split equivalence classes, but cannot merge them
+\end{itemize}
+
+So the partition of the state set induced by $k$-bounded equivalence forms a refinement chain: $k=0$ is very coarse, then $k=1$ may split it, and so on.
+
+At $k=0$, the only word with length $\le 0$ is the empty word \texttt{[]}. Therefore, $0$-bounded equivalence depends only on whether a state is accepting. This implies there are at most two equivalence classes at $k=0$ (accepting vs.\ non-accepting).
+
+\subsection{Step 3: stabilization implies full Nerode equivalence}
+
+A key lemma is:
+
+\begin{quote}
+If the $k$-bounded equivalence relation is the same as the $(k+1)$-bounded relation, then it has stabilized, and it coincides with full Nerode equivalence.
+\end{quote}
+
+Why this is true (informally): if allowing words of length $k+1$ does not split any equivalence class, then no longer word can split it either. Any longer distinguishing word would create a split at the first length where the two behaviors diverge, contradicting equality at consecutive steps.
+
+In Lean, this is proved using the DFA transition structure and a ``first point of disagreement'' argument.
+
+\subsection{Step 4: stabilization must happen by $k=\lvert\sigma\rvert$}
+
+Now use finiteness of the state set. Each time $k$ increases, exactly one of two things happens:
+\begin{enumerate}[label=(\alph*), leftmargin=1.75em]
+  \item the partition strictly refines (the number of equivalence classes increases), or
+  \item it stabilizes (and then equals full Nerode equivalence by the lemma above)
+\end{enumerate}
+
+But the number of equivalence classes can never exceed the number of states $\lvert\sigma\rvert$. Starting from at most 2 classes at $k=0$, the number of strict refinements is bounded. Therefore, by $k=\lvert\sigma\rvert$ the process must have stabilized, and the $k$-bounded relation equals full Nerode equivalence.
+
+This yields a decision procedure:
+
+\begin{quote}
+To test whether $s_1$ and $s_2$ are Nerode equivalent, it is enough to test them on all words of length at most $\lvert\sigma\rvert$.
+\end{quote}
+
+In the project, this is the most technically involved development: we define the bounded relation, prove monotonicity, prove the stabilization lemma, and combine it with the finite pigeonhole argument.
+
+\section{Connection to left quotients and \texttt{Language.toDFA}}
+
+Mathlib also has a construction \texttt{Language.toDFA} based on left quotients of a language:
+\begin{itemize}
+  \item states are left quotients $w^{-1}L$
+  \item start state is $L$
+  \item accept states are those quotients containing the empty word
+\end{itemize}
+
+\begin{Verbatim}
+def toDFA : DFA α (Set.range L.leftQuotient) where
+  step s a := by
+    refine ⟨s.val.leftQuotient [a], ?_⟩
+    obtain ⟨y, hy⟩ := s.prop
+    exists y ++ [a]
+    rw [← hy, leftQuotient_append]
+  start := ⟨L, by exists []⟩
+  accept := { s | [] ∈ s.val }
+\end{Verbatim}
+
+This starts from an arbitrary language rather than from a DFA, so it does not provide executability or finiteness by itself. In this project we prove that if a DFA \texttt{M} recognizes \texttt{L}, then \texttt{L.toDFA} is equivalent (bijective morphism) to \texttt{M.minimize}. This connects the DFA-based construction to the language-theoretic Myhill--Nerode construction already present in Mathlib.
+
+\section{Project structure}
+
+\begin{itemize}
+  \item \texttt{MyProject/DFA/Hom.lean} --- morphisms, surjections, equivalences, preorder
+  \item \texttt{MyProject/DFA/Accessible.lean} --- accessibility, \texttt{toAccessible}, decidability infrastructure
+  \item \texttt{MyProject/DFA/Nerode.lean} --- Nerode equivalence, bounded equivalence, stabilization results
+  \item \texttt{MyProject/DFA/Minimize.lean} --- minimization construction and correctness, uniqueness up to equivalence
+  \item \texttt{MyProject/DFA/Fin.lean} --- computable DFAs via \texttt{Fin} accept sets
+\end{itemize}
+
+\section{Current developments}
+
+I initially intended this as a Mathlib contribution and discussed it on Lean Zulip. I was pointed to the community project \textbf{CSLib}, which targets computer science formalizations more directly. CSLib uses different DFA definitions, but currently also lacks morphisms, accessibility, and minimization. I am refactoring this development to CSLib’s definitions with the goal of contributing it there.
+
+\begin{Verbatim}
+https://leanprover.zulipchat.com/#narrow/channel/287929-mathlib4/topic/Automata.20Theory.20Contribution/with/562817136
+\end{Verbatim}
+
+\section{TODO}
+
+\begin{itemize}
+  \item Add textbook references (Hopcroft and Ullman, and standard Myhill--Nerode presentations).
+  \item Add a short note comparing this construction with Hopcroft’s algorithm, and why the quotient construction is the right choice for a proof-oriented formalization.
+\end{itemize}
+
+\end{document}
