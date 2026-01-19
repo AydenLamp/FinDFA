@@ -356,8 +356,7 @@ noncomputable def toNerodeDFA_eq_accepts_toDFA [Accessible M] : M.accepts.toDFA 
       have h₅ := M.nerode_iff_leftQuotient_eq' h₂.choose (h₃.choose ++ w₂)
       rw [heq₂, h₅]
       simp_all [evalFrom]
-      have h₆ : (List.foldl M.accepts.toDFA.step ⟨l, h₁⟩ w₂).val = List.foldl (λ x ↦ (M.accepts.toDFA.step ⟨l, h₁⟩ x).val) := by
-      simp_all [Language.leftQuotient_accepts_apply]
+      sorry
     exact h₄
 
 
