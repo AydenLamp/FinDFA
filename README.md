@@ -2,6 +2,29 @@
 
 This repository contains a formalization of the minimization of deterministic finite automata (DFAs) in the Lean 4 theorem prover.
 
+# Why Formalize Mathmatics
+
+Mathematics is typically communicated in precise but informal language, where definitions and proofs are written for human readers and leave many steps implicit. This style has proven powerful, but it also has a limitation: the correctness of a proof ultimately depends on social verification. Mathematicians check arguments themselves, discover errors, and fill in gaps. As proofs grow larger and more complex, this informal process becomes fragile.
+
+Mathematicians responded to this problem with mathematical formalization, where definitions, statements, and proofs are represented inside a formal system with precise syntax and semantics. In a formal setting, a theorem is a syntactic object: a derivation from axioms and previously proved results, where every step is justified by an explicit rule. This yields a notion of proof that is not mediated by interpretation, but by a mechanical and machine-checkable standard. Instead of relying on “it is clear that…”, a formal proof must make every dependency explicit, sometimes at the cost of verbosity, but in exchange for guaranteed correctness.
+
+Historically, fully formal proofs were too labor-intensive to be a realistic replacement for ordinary mathematical writing. This is the problem that interactive theorem provers (ITPs) were created to solve. An ITP is software in which a user incrementally constructs a proof while the system checks that each step follows from the axioms and inference rules of the underlying logic. Modern provers provide powerful automation high-level tactics so that users can write proofs at a reasonably high level of abstraction. At the same time, they are engineered around a trusted kernel which checks proofs, and everything else is treated as a convenience layer whose output is still validated by the kernel.
+
+## Lean 4 and Mathlib
+
+Lean 4 is a modern proof assistant that is both an ITP and a functional programming language based on dependent type theory. This combination is particularly well suited to formalizing mathematics that has an algorithmic component. In Lean, one can define mathematical objects, state theorems about them, and also write executable functions that compute with them. A proof about an algorithm can therefore refer to the actual definition being executed, not to an informal description that might subtly diverge from an implementation.
+
+Large-scale formalization is made feasible by Lean’s community library, mathlib. Mathlib provides a broad foundation of definitions and theorems across many mathematical domains. In traditional mathematics, large projects are limited by the amount of trust required between collaborators—each participant must rely on the correctness of others’ work. In a formal library, contributions are checked by the kernel, so the “cost of trust” is reduced. This enables thousands of contributors to build a coherent, machine-checked body of mathematics that future work can extend.
+
+## Machine checked algorithms
+
+An application of proof assistants is the verification of algorithms against mathematical specifications. In an ITP like Lean, one can define a specification of correctness, define an algorithm as a function, then prove that the algorithm satisfies the specification for all inputs. This allows one to verify that an algiorithm is not only correct, but also satifies stonger properties such as always producing a canonical result (if you define some notion of equivalence). 
+
+## Computability 
+
+Formal verification also brings the relationship between mathematics and computation into view. In traditional classical mathematics, it is common to prove that an object exists without giving a procedure to construct it. In contrast, in constructive mathematics, an existence proof is expected to provide a method of construction. Proof assistants make this distinction concrete because definitions can be executed and theorems can carry computational content.
+Lean enforces that definitional computation is well behaved: functions are total (they must terminate) and deterministic (the same input produces the same output). As a result, implementing an algorithm that constructs an object can be viewed as giving computational evidence of existence. When paired with a proof of correctness, the algorithm becomes a constructive witness: not only does a desired object exist, but we can acutally compute it. 
+
 ## Table of Contents
 
 - [What is Lean?](#what-is-lean)
