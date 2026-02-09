@@ -1,4 +1,5 @@
 # todo
+- test
 - more about the landscape or history of ITPs
 - say a little about Dependent type theory, CIC, Curry-Howard, add references
 - Seperate mathmatical description from Lean
