@@ -2,6 +2,16 @@
 - more about the landscape or history of ITPs
 - say a little about Dependent type theory, CIC, Curry-Howard, add references
 - Seperate mathmatical description from Lean
+- (new) test changing lean version on a project.
+- Check out some papers about automath
+- check out paper "Calculus of Inductive Constructions" (paulin-Mohring maybe) and "calculus of constructoins" (Coqand)
+- See foundations of mathematics section of Avigad's book "Mathematical logic and computation"
+- Where does lean log changes to tactic functionality
+
+# Math todos
+- Define star free languages (with complement)
+- Work on easy direction : L is star free -> M(L) has no nontrivial groups
+- Characterize apierodicity as m, m^2, ... having no loop longer than one
 
 # From reading
 - Below: From Buzzard
@@ -19,7 +29,7 @@
 - (ITP providing understanding) Formalization encourages us to identify, name, and reuse abstractions that are implicit in the mathematical literature. The engineering that makes it easier to use the library also reviels mathematical understanding and connections.
 - Mathematical understanding is fleeting, but formal verification brings a satisfying sense of closure. Digital technollgy offeres new ways to support mathematical discourse.
 - (ITP for managing complexity) Formalization helps manage complexity: Modularig mathematical data by breaking it up into smaller pieces with clearly delineated interfaces enables us to deal with one piece at at time, focusing on the information that is relavant at any point in a proof and setting aside the information that isn't. Proof assistants help us switch context between different parts of a proof by telling us explicitly what information and assumptions are in play, and making sure we use definitions and theorems correctly. WIth the use of an ITP, contributors only need to keep track of the objects which are locally relevant, thereby reducing the conginitive load significantly. At the same time, these targets can be recursively borken into smaller components until they can be handled directly. This is particularly useful in collaborations as this allows for the work to be easily distribued among contributors ith potentially varying areas of expertise. an ITP keeps track of the complicated dependency graph of objects within a methematical project. This is done in the process of type-checking.
--   - Comment on how this sometimes reduces mathmatical understanding and can hide semantics, making proof writinging feel like a syntactic game where you forget about the math and semantics behind it. 
+ - Comment on how this sometimes reduces mathmatical understanding and can hide semantics, making proof writinging feel like a syntactic game where you forget about the math and semantics behind it. 
 - (FOrmal libraries) help manage a growing base of mathmatical literature. It provides a place to look if you want to see if a result is already solved by someone. It makes the connections between domains explicit.
 - (feedback and gameifying) ITPs provide immeadiate feedback. When a proof is incorrect, or, at least, does ont provide enough detail for the computer to assess correctness, you know it right away. When the computer can confirm the correctness, they arlse know it right away, and it feels good. This is usefull pedagogically and can be become addicting and game-like. Making math more like programming makes it easier to learn for many people (think of how many people learned to code on their own).
 - (Formal verification) is used by AWS, abble, and Facebook to verify the correctness of code. This is becoming more common in mathematics. ITPs are especially well suited to verification.
